@@ -14,6 +14,12 @@ import { Transaction } from "./models/transaction"
 })
 export class App implements OnInit {
   // =========================
+  // NAVEGAÇÃO
+  // =========================
+
+  activeSection: "dashboard" | "transactions" | "assistant" = "dashboard"
+
+  // =========================
   // DASHBOARD
   // =========================
 
@@ -22,6 +28,13 @@ export class App implements OnInit {
   autoTotal = 0
 
   transactions: Transaction[] = []
+
+  // =========================
+  // FILTROS
+  // =========================
+
+  searchTerm = ""
+  selectedCategory = "ALL"
 
   // =========================
   // NOVA TRANSAÇÃO
@@ -47,7 +60,7 @@ export class App implements OnInit {
   aiLoading = false
 
   // =========================
-  // ÁUDIO
+  // MICROFONE
   // =========================
 
   isRecording = false
@@ -68,7 +81,39 @@ export class App implements OnInit {
   }
 
   // =========================
-  // CARREGAR TRANSAÇÕES
+  // NAVEGAÇÃO
+  // =========================
+
+  setSection(section: "dashboard" | "transactions" | "assistant"): void {
+    this.activeSection = section
+
+    if (section === "assistant") {
+      this.openAiModal()
+    }
+  }
+
+  // =========================
+  // CATEGORIAS
+  // =========================
+
+  getCategoryName(category: string): string {
+    switch (category) {
+      case "GROCERIES":
+        return "Supermercado"
+
+      case "PHARMA":
+        return "Farmácia"
+
+      case "AUTO":
+        return "Automóvel"
+
+      default:
+        return category
+    }
+  }
+
+  // =========================
+  // TRANSAÇÕES
   // =========================
 
   loadTransactions(): void {
@@ -133,6 +178,37 @@ export class App implements OnInit {
   }
 
   // =========================
+  // FILTROS
+  // =========================
+
+  get filteredTransactions(): Transaction[] {
+    const search = this.searchTerm.trim().toLowerCase()
+
+    return this.transactions.filter((transaction) => {
+      const matchesSearch =
+        !search || transaction.description.toLowerCase().includes(search)
+
+      const matchesCategory =
+        this.selectedCategory === "ALL" ||
+        transaction.category === this.selectedCategory
+
+      return matchesSearch && matchesCategory
+    })
+  }
+
+  get filteredTotal(): number {
+    return this.filteredTransactions.reduce(
+      (total, transaction) => total + transaction.amount,
+      0,
+    )
+  }
+
+  clearFilters(): void {
+    this.searchTerm = ""
+    this.selectedCategory = "ALL"
+  }
+
+  // =========================
   // NOVA TRANSAÇÃO
   // =========================
 
@@ -157,14 +233,6 @@ export class App implements OnInit {
     ) {
       return
     }
-
-    /*
-     * O backend trabalha com centavos.
-     *
-     * R$ 200,00
-     *      ↓
-     * 20000
-     */
 
     const transactionToSend = {
       description: this.newTransaction.description,
@@ -206,6 +274,10 @@ export class App implements OnInit {
 
     this.aiMessage = ""
     this.aiResponse = ""
+
+    if (this.activeSection === "assistant") {
+      this.activeSection = "dashboard"
+    }
   }
 
   sendAiMessage(): void {
@@ -254,11 +326,6 @@ export class App implements OnInit {
   private async startRecording(): Promise<void> {
     try {
       this.aiResponse = ""
-
-      /*
-       * Solicita permissão para utilizar
-       * o microfone do computador.
-       */
 
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -339,12 +406,6 @@ export class App implements OnInit {
         this.aiResponse = response
 
         this.aiLoading = false
-
-        /*
-         * Se a IA cadastrou uma
-         * transação por voz,
-         * atualizamos o dashboard.
-         */
 
         this.loadTransactions()
 
