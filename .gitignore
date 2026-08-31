@@ -48,3 +48,9 @@ application-secret.properties
 ### OS ###
 .DS_Store
 Thumbs.db
+
+### Angular / Node ###
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*

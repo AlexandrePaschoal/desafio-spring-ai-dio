@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
+
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
@@ -62,28 +64,43 @@ public class TransactionController {
         return chatClient.prompt().user(userMessage).call().content();
     }
 
-    @PostMapping(value = "/ai/audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> processAudioWithAi(@RequestParam("file") MultipartFile file) {
-
+    @PostMapping(
+            value = "/ai/audio",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<String> processAudioWithAi(
+            @RequestParam("file") MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("O arquivo de áudio não pode estar vazio.");
+            return ResponseEntity
+                    .badRequest()
+                    .body("O arquivo de áudio não pode estar vazio.");
         }
 
         try {
 
-            String transcription = groqTranscriptionService.transcribe(file);
+            String transcription =
+                    groqTranscriptionService.transcribe(file);
 
-
-            String response = chatClient.prompt().user(transcription).call().content();
+            String response = chatClient
+                    .prompt()
+                    .user(transcription)
+                    .call()
+                    .content();
 
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Erro ao processar o arquivo de áudio.");
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body("Erro ao processar o arquivo de áudio.");
 
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Erro ao processar a solicitação com IA.");
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body("Erro ao processar a solicitação com IA.");
         }
     }
 }
