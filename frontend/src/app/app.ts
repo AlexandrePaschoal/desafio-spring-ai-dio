@@ -1,94 +1,194 @@
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core"
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
-import { FormsModule } from "@angular/forms"
+import { AuthService } from './services/auth.service';
+import { TransactionService } from './services/transaction.service';
 
-import { TransactionService } from "./services/transaction.service"
-
-import { Transaction } from "./models/transaction"
+import { Transaction } from './models/transaction';
 
 @Component({
-  selector: "app-root",
+  selector: 'app-root',
   imports: [FormsModule],
-  templateUrl: "./app.html",
-  styleUrl: "./app.css",
+  templateUrl: './app.html',
+  styleUrl: './app.css',
 })
 export class App implements OnInit {
+  // =========================
+  // AUTENTICAÇÃO
+  // =========================
+
+  isAuthenticated = false;
+
+  currentUser: {
+    id: string;
+    name: string;
+    email: string;
+  } | null = null;
+
+  loginData = {
+    email: '',
+    password: '',
+  };
+
+  loginLoading = false;
+  loginError = '';
+
   // =========================
   // NAVEGAÇÃO
   // =========================
 
-  activeSection: "dashboard" | "transactions" | "assistant" = "dashboard"
+  activeSection: 'dashboard' | 'transactions' | 'assistant' = 'dashboard';
 
   // =========================
   // DASHBOARD
   // =========================
 
-  groceriesTotal = 0
-  pharmaTotal = 0
-  autoTotal = 0
+  groceriesTotal = 0;
+  pharmaTotal = 0;
+  autoTotal = 0;
 
-  transactions: Transaction[] = []
+  transactions: Transaction[] = [];
 
   // =========================
   // FILTROS
   // =========================
 
-  searchTerm = ""
-  selectedCategory = "ALL"
+  searchTerm = '';
+  selectedCategory = 'ALL';
 
   // =========================
   // NOVA TRANSAÇÃO
   // =========================
 
-  showTransactionModal = false
+  showTransactionModal = false;
 
   newTransaction = {
-    description: "",
+    description: '',
     amount: 0,
-    category: "GROCERIES",
-  }
+    category: 'GROCERIES',
+  };
 
   // =========================
   // ASSISTENTE IA
   // =========================
 
-  showAiModal = false
+  showAiModal = false;
 
-  aiMessage = ""
-  aiResponse = ""
+  aiMessage = '';
+  aiResponse = '';
 
-  aiLoading = false
+  aiLoading = false;
 
   // =========================
   // MICROFONE
   // =========================
 
-  isRecording = false
+  isRecording = false;
 
-  private mediaRecorder?: MediaRecorder
-
-  private audioChunks: Blob[] = []
-
-  private mediaStream?: MediaStream
+  private mediaRecorder?: MediaRecorder;
+  private audioChunks: Blob[] = [];
+  private mediaStream?: MediaStream;
 
   constructor(
+    private authService: AuthService,
     private transactionService: TransactionService,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    this.loadTransactions()
+    this.isAuthenticated = this.authService.isAuthenticated();
+
+    if (this.isAuthenticated) {
+      this.currentUser = this.authService.getUser();
+      this.loadTransactions();
+    }
+  }
+
+  // =========================
+  // AUTENTICAÇÃO
+  // =========================
+
+  login(): void {
+    const email = this.loginData.email.trim();
+    const password = this.loginData.password;
+
+    if (!email || !password) {
+      this.loginError = 'Informe seu e-mail e sua senha.';
+      return;
+    }
+
+    this.loginLoading = true;
+    this.loginError = '';
+
+    this.authService.login(email, password).subscribe({
+      next: (response) => {
+        this.isAuthenticated = true;
+        this.currentUser = response.user;
+
+        this.loginData = {
+          email: '',
+          password: '',
+        };
+
+        this.loginLoading = false;
+
+        this.loadTransactions();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao realizar login:', error);
+
+        this.loginError = 'E-mail ou senha inválidos.';
+        this.loginLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  logout(): void {
+    if (this.isRecording) {
+      this.stopRecording();
+    }
+
+    this.stopMicrophone();
+
+    this.authService.logout();
+
+    this.isAuthenticated = false;
+    this.currentUser = null;
+
+    this.activeSection = 'dashboard';
+
+    this.transactions = [];
+
+    this.groceriesTotal = 0;
+    this.pharmaTotal = 0;
+    this.autoTotal = 0;
+
+    this.searchTerm = '';
+    this.selectedCategory = 'ALL';
+
+    this.showTransactionModal = false;
+    this.showAiModal = false;
+
+    this.aiMessage = '';
+    this.aiResponse = '';
+
+    this.cdr.detectChanges();
   }
 
   // =========================
   // NAVEGAÇÃO
   // =========================
 
-  setSection(section: "dashboard" | "transactions" | "assistant"): void {
-    this.activeSection = section
+  setSection(section: 'dashboard' | 'transactions' | 'assistant'): void {
+    this.activeSection = section;
 
-    if (section === "assistant") {
-      this.openAiModal()
+    if (section === 'assistant') {
+      this.openAiModal();
     }
   }
 
@@ -98,17 +198,17 @@ export class App implements OnInit {
 
   getCategoryName(category: string): string {
     switch (category) {
-      case "GROCERIES":
-        return "Supermercado"
+      case 'GROCERIES':
+        return 'Supermercado';
 
-      case "PHARMA":
-        return "Farmácia"
+      case 'PHARMA':
+        return 'Farmácia';
 
-      case "AUTO":
-        return "Automóvel"
+      case 'AUTO':
+        return 'Automóvel';
 
       default:
-        return category
+        return category;
     }
   }
 
@@ -117,64 +217,65 @@ export class App implements OnInit {
   // =========================
 
   loadTransactions(): void {
-    this.transactions = []
+    if (!this.isAuthenticated) {
+      return;
+    }
 
-    this.groceriesTotal = 0
-    this.pharmaTotal = 0
-    this.autoTotal = 0
+    this.transactions = [];
 
-    this.transactionService.getByCategory("GROCERIES").subscribe({
+    this.groceriesTotal = 0;
+    this.pharmaTotal = 0;
+    this.autoTotal = 0;
+
+    this.transactionService.getByCategory('GROCERIES').subscribe({
       next: (transactions) => {
-        this.groceriesTotal = this.calculateTotal(transactions)
+        this.groceriesTotal = this.calculateTotal(transactions);
 
-        this.transactions.push(...transactions)
+        this.transactions.push(...transactions);
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao carregar GROCERIES:", error)
+        console.error('Erro ao carregar GROCERIES:', error);
       },
-    })
+    });
 
-    this.transactionService.getByCategory("PHARMA").subscribe({
+    this.transactionService.getByCategory('PHARMA').subscribe({
       next: (transactions) => {
-        this.pharmaTotal = this.calculateTotal(transactions)
+        this.pharmaTotal = this.calculateTotal(transactions);
 
-        this.transactions.push(...transactions)
+        this.transactions.push(...transactions);
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao carregar PHARMA:", error)
+        console.error('Erro ao carregar PHARMA:', error);
       },
-    })
+    });
 
-    this.transactionService.getByCategory("AUTO").subscribe({
+    this.transactionService.getByCategory('AUTO').subscribe({
       next: (transactions) => {
-        this.autoTotal = this.calculateTotal(transactions)
+        this.autoTotal = this.calculateTotal(transactions);
 
-        this.transactions.push(...transactions)
+        this.transactions.push(...transactions);
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao carregar AUTO:", error)
+        console.error('Erro ao carregar AUTO:', error);
       },
-    })
+    });
   }
 
   private calculateTotal(transactions: Transaction[]): number {
-    return transactions.reduce(
-      (total, transaction) => total + transaction.amount,
-      0,
-    )
+    return transactions.reduce((total, transaction) => total + transaction.amount, 0);
   }
 
   get totalExpenses(): number {
-    return this.groceriesTotal + this.pharmaTotal + this.autoTotal
+    return this.groceriesTotal + this.pharmaTotal + this.autoTotal;
   }
 
   // =========================
@@ -182,30 +283,25 @@ export class App implements OnInit {
   // =========================
 
   get filteredTransactions(): Transaction[] {
-    const search = this.searchTerm.trim().toLowerCase()
+    const search = this.searchTerm.trim().toLowerCase();
 
     return this.transactions.filter((transaction) => {
-      const matchesSearch =
-        !search || transaction.description.toLowerCase().includes(search)
+      const matchesSearch = !search || transaction.description.toLowerCase().includes(search);
 
       const matchesCategory =
-        this.selectedCategory === "ALL" ||
-        transaction.category === this.selectedCategory
+        this.selectedCategory === 'ALL' || transaction.category === this.selectedCategory;
 
-      return matchesSearch && matchesCategory
-    })
+      return matchesSearch && matchesCategory;
+    });
   }
 
   get filteredTotal(): number {
-    return this.filteredTransactions.reduce(
-      (total, transaction) => total + transaction.amount,
-      0,
-    )
+    return this.filteredTransactions.reduce((total, transaction) => total + transaction.amount, 0);
   }
 
   clearFilters(): void {
-    this.searchTerm = ""
-    this.selectedCategory = "ALL"
+    this.searchTerm = '';
+    this.selectedCategory = 'ALL';
   }
 
   // =========================
@@ -213,25 +309,22 @@ export class App implements OnInit {
   // =========================
 
   openTransactionModal(): void {
-    this.showTransactionModal = true
+    this.showTransactionModal = true;
   }
 
   closeTransactionModal(): void {
-    this.showTransactionModal = false
+    this.showTransactionModal = false;
 
     this.newTransaction = {
-      description: "",
+      description: '',
       amount: 0,
-      category: "GROCERIES",
-    }
+      category: 'GROCERIES',
+    };
   }
 
   createTransaction(): void {
-    if (
-      !this.newTransaction.description.trim() ||
-      this.newTransaction.amount <= 0
-    ) {
-      return
+    if (!this.newTransaction.description.trim() || this.newTransaction.amount <= 0) {
+      return;
     }
 
     const transactionToSend = {
@@ -240,21 +333,21 @@ export class App implements OnInit {
       amount: Math.round(this.newTransaction.amount * 100),
 
       category: this.newTransaction.category,
-    }
+    };
 
     this.transactionService.create(transactionToSend).subscribe({
       next: () => {
-        this.closeTransactionModal()
+        this.closeTransactionModal();
 
-        this.loadTransactions()
+        this.loadTransactions();
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao cadastrar transação:", error)
+        console.error('Erro ao cadastrar transação:', error);
       },
-    })
+    });
   }
 
   // =========================
@@ -262,53 +355,53 @@ export class App implements OnInit {
   // =========================
 
   openAiModal(): void {
-    this.showAiModal = true
+    this.showAiModal = true;
   }
 
   closeAiModal(): void {
     if (this.isRecording) {
-      this.stopRecording()
+      this.stopRecording();
     }
 
-    this.showAiModal = false
+    this.showAiModal = false;
 
-    this.aiMessage = ""
-    this.aiResponse = ""
+    this.aiMessage = '';
+    this.aiResponse = '';
 
-    if (this.activeSection === "assistant") {
-      this.activeSection = "dashboard"
+    if (this.activeSection === 'assistant') {
+      this.activeSection = 'dashboard';
     }
   }
 
   sendAiMessage(): void {
     if (!this.aiMessage.trim()) {
-      return
+      return;
     }
 
-    this.aiLoading = true
-    this.aiResponse = ""
+    this.aiLoading = true;
+    this.aiResponse = '';
 
     this.transactionService.processWithAi(this.aiMessage).subscribe({
       next: (response) => {
-        this.aiResponse = response
+        this.aiResponse = response;
 
-        this.aiLoading = false
+        this.aiLoading = false;
 
-        this.loadTransactions()
+        this.loadTransactions();
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao processar comando com IA:", error)
+        console.error('Erro ao processar comando com IA:', error);
 
-        this.aiResponse = "Não foi possível processar sua solicitação."
+        this.aiResponse = 'Não foi possível processar sua solicitação.';
 
-        this.aiLoading = false
+        this.aiLoading = false;
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
-    })
+    });
   }
 
   // =========================
@@ -317,110 +410,109 @@ export class App implements OnInit {
 
   async toggleRecording(): Promise<void> {
     if (this.isRecording) {
-      this.stopRecording()
+      this.stopRecording();
     } else {
-      await this.startRecording()
+      await this.startRecording();
     }
   }
 
   private async startRecording(): Promise<void> {
     try {
-      this.aiResponse = ""
+      this.aiResponse = '';
 
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-      })
+      });
 
-      this.audioChunks = []
+      this.audioChunks = [];
 
-      this.mediaRecorder = new MediaRecorder(this.mediaStream)
+      this.mediaRecorder = new MediaRecorder(this.mediaStream);
 
       this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
         if (event.data.size > 0) {
-          this.audioChunks.push(event.data)
+          this.audioChunks.push(event.data);
         }
-      }
+      };
 
       this.mediaRecorder.onstop = () => {
-        const mimeType = this.mediaRecorder?.mimeType || "audio/webm"
+        const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
 
         const audioBlob = new Blob(this.audioChunks, {
           type: mimeType,
-        })
+        });
 
-        this.stopMicrophone()
+        this.stopMicrophone();
 
-        this.sendAudio(audioBlob)
-      }
+        this.sendAudio(audioBlob);
+      };
 
-      this.mediaRecorder.start()
+      this.mediaRecorder.start();
 
-      this.isRecording = true
+      this.isRecording = true;
 
-      this.cdr.detectChanges()
+      this.cdr.detectChanges();
     } catch (error) {
-      console.error("Erro ao acessar o microfone:", error)
+      console.error('Erro ao acessar o microfone:', error);
 
-      this.aiResponse =
-        "Não foi possível acessar o microfone. Verifique a permissão do navegador."
+      this.aiResponse = 'Não foi possível acessar o microfone. Verifique a permissão do navegador.';
 
-      this.cdr.detectChanges()
+      this.cdr.detectChanges();
     }
   }
 
   private stopRecording(): void {
-    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-      this.mediaRecorder.stop()
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.stop();
     }
 
-    this.isRecording = false
+    this.isRecording = false;
 
-    this.cdr.detectChanges()
+    this.cdr.detectChanges();
   }
 
   private stopMicrophone(): void {
     if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((track) => track.stop())
+      this.mediaStream.getTracks().forEach((track) => track.stop());
 
-      this.mediaStream = undefined
+      this.mediaStream = undefined;
     }
   }
 
   private sendAudio(audioBlob: Blob): void {
     if (audioBlob.size === 0) {
-      this.aiResponse = "Nenhum áudio foi gravado."
+      this.aiResponse = 'Nenhum áudio foi gravado.';
 
-      this.cdr.detectChanges()
+      this.cdr.detectChanges();
 
-      return
+      return;
     }
 
-    this.aiLoading = true
+    this.aiLoading = true;
 
-    this.aiResponse = "Processando comando de voz..."
+    this.aiResponse = 'Processando comando de voz...';
 
-    this.cdr.detectChanges()
+    this.cdr.detectChanges();
 
     this.transactionService.processAudioWithAi(audioBlob).subscribe({
       next: (response) => {
-        this.aiResponse = response
+        this.aiResponse = response;
 
-        this.aiLoading = false
+        this.aiLoading = false;
 
-        this.loadTransactions()
+        this.loadTransactions();
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
 
       error: (error) => {
-        console.error("Erro ao processar áudio:", error)
+        console.error('Erro ao processar áudio:', error);
 
-        this.aiResponse = "Não foi possível processar o áudio."
+        this.aiResponse = 'Não foi possível processar o áudio.';
 
-        this.aiLoading = false
+        this.aiLoading = false;
 
-        this.cdr.detectChanges()
+        this.cdr.detectChanges();
       },
-    })
+    });
   }
 }
