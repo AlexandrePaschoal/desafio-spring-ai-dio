@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
@@ -43,9 +44,18 @@ public class JwtConfig {
                         "HmacSHA256"
                 );
 
-        return NimbusJwtDecoder
-                .withSecretKey(secretKey)
-                .macAlgorithm(MacAlgorithm.HS256)
-                .build();
+        NimbusJwtDecoder decoder =
+                NimbusJwtDecoder
+                        .withSecretKey(secretKey)
+                        .macAlgorithm(MacAlgorithm.HS256)
+                        .build();
+
+        decoder.setJwtValidator(
+                JwtValidators.createDefaultWithIssuer(
+                        "smart-budget"
+                )
+        );
+
+        return decoder;
     }
 }
