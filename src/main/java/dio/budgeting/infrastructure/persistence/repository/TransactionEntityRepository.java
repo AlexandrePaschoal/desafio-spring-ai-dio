@@ -7,6 +7,11 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface TransactionEntityRepository extends CrudRepository<TransactionEntity, UUID> {
-    List<TransactionEntity> findAllByCategory(Category category);
+public interface TransactionEntityRepository
+        extends CrudRepository<TransactionEntity, UUID> {
+
+    List<TransactionEntity> findAllByCategoryAndUserId(
+            Category category,
+            UUID userId
+    );
 }

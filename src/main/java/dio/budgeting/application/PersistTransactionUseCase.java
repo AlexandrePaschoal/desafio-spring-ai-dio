@@ -4,21 +4,40 @@ import dio.budgeting.application.input.PersistTransactionInput;
 import dio.budgeting.application.output.TransactionOutput;
 import dio.budgeting.domain.Transaction;
 import dio.budgeting.domain.TransactionRepository;
+import dio.budgeting.infrastructure.security.CurrentUserService;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PersistTransactionUseCase {
-    private final TransactionRepository transactionRepository;
 
-    public PersistTransactionUseCase(TransactionRepository transactionRepository) {
+    private final TransactionRepository transactionRepository;
+    private final CurrentUserService currentUserService;
+
+    public PersistTransactionUseCase(
+            TransactionRepository transactionRepository,
+            CurrentUserService currentUserService
+    ) {
         this.transactionRepository = transactionRepository;
+        this.currentUserService = currentUserService;
     }
 
-    @Tool(name = "persist-transaction", description = "Persiste uma nova transação financeira")
+    @Tool(
+            name = "persist-transaction",
+            description = "Persiste uma nova transação financeira"
+    )
     public TransactionOutput execute(PersistTransactionInput input) {
+
+        var userId = currentUserService.getCurrentUserId();
+
         var transaction = transactionRepository.save(
-                new Transaction(input.description(), input.amount(), input.category()));
+                new Transaction(
+                        input.description(),
+                        input.amount(),
+                        input.category()
+                ),
+                userId
+        );
 
         return TransactionOutput.from(transaction);
     }
