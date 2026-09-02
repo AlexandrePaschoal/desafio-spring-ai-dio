@@ -3,6 +3,7 @@ package dio.budgeting.infrastructure.http;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -48,6 +49,23 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = createErrorBody(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(body);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException exception,
+            HttpServletRequest request
+    ) {
+
+        Map<String, Object> body = createErrorBody(
+                HttpStatus.BAD_REQUEST,
+                "O corpo da requisição é obrigatório.",
                 request.getRequestURI()
         );
 
