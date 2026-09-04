@@ -97,7 +97,8 @@ public class GlobalExceptionHandler {
             String path
     ) {
 
-        Map<String, Object> body = new LinkedHashMap<>();
+        Map<String, Object> body =
+                new LinkedHashMap<>();
 
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());

@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 .permitAll()
 
                                 .requestMatchers(
-                                        "/transactions/**"
+                                        "/transactions/**",
+                                        "/categories/**"
                                 )
                                 .authenticated()
 

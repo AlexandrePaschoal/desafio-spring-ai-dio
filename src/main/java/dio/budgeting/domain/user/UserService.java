@@ -1,22 +1,28 @@
 package dio.budgeting.domain.user;
 
+import dio.budgeting.application.CategoryService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CategoryService categoryService;
 
     public UserService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            CategoryService categoryService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.categoryService = categoryService;
     }
 
+    @Transactional
     public User register(RegisterUserRequest request) {
 
         if (request == null) {
@@ -107,7 +113,14 @@ public class UserService {
                 encodedPassword
         );
 
-        return userRepository.save(user);
+        User savedUser =
+                userRepository.save(user);
+
+        categoryService.createDefaultCategories(
+                savedUser
+        );
+
+        return savedUser;
     }
 
     public User authenticate(LoginRequest request) {
