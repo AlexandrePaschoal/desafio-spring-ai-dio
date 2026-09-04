@@ -3,7 +3,9 @@ import { FormsModule } from '@angular/forms';
 
 import { AuthService } from './services/auth.service';
 import { TransactionService } from './services/transaction.service';
+import { CategoryService } from './services/category.service';
 
+import { Category } from './models/category';
 import { Transaction } from './models/transaction';
 
 @Component({
@@ -43,11 +45,11 @@ export class App implements OnInit {
   // DASHBOARD
   // =========================
 
-  groceriesTotal = 0;
-  pharmaTotal = 0;
-  autoTotal = 0;
+  categories: Category[] = [];
 
   transactions: Transaction[] = [];
+
+  categoryTotals: Record<string, number> = {};
 
   // =========================
   // FILTROS
@@ -65,7 +67,7 @@ export class App implements OnInit {
   newTransaction = {
     description: '',
     amount: 0,
-    category: 'GROCERIES',
+    categoryId: '',
   };
 
   // =========================
@@ -93,6 +95,7 @@ export class App implements OnInit {
     private authService: AuthService,
     private transactionService: TransactionService,
     private cdr: ChangeDetectorRef,
+    private categoryService: CategoryService,
   ) {}
 
   ngOnInit(): void {
@@ -100,7 +103,7 @@ export class App implements OnInit {
 
     if (this.isAuthenticated) {
       this.currentUser = this.authService.getUser();
-      this.loadTransactions();
+      this.loadCategories();
     }
   }
 
@@ -132,7 +135,7 @@ export class App implements OnInit {
 
         this.loginLoading = false;
 
-        this.loadTransactions();
+        this.loadCategories();
 
         this.cdr.detectChanges();
       },
@@ -164,9 +167,8 @@ export class App implements OnInit {
 
     this.transactions = [];
 
-    this.groceriesTotal = 0;
-    this.pharmaTotal = 0;
-    this.autoTotal = 0;
+    this.categories = [];
+    this.categoryTotals = {};
 
     this.searchTerm = '';
     this.selectedCategory = 'ALL';
@@ -196,22 +198,29 @@ export class App implements OnInit {
   // CATEGORIAS
   // =========================
 
-  getCategoryName(category: string): string {
-    switch (category) {
-      case 'GROCERIES':
-        return 'Supermercado';
-
-      case 'PHARMA':
-        return 'Farmácia';
-
-      case 'AUTO':
-        return 'Automóvel';
-
-      default:
-        return category;
+  loadCategories(): void {
+    if (!this.isAuthenticated) {
+      return;
     }
-  }
 
+    this.categoryService.findAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+
+        if (!this.newTransaction.categoryId && categories.length > 0) {
+          this.newTransaction.categoryId = categories[0].id;
+        }
+
+        this.loadTransactions();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao carregar categorias:', error);
+      },
+    });
+  }
   // =========================
   // TRANSAÇÕES
   // =========================
@@ -222,52 +231,23 @@ export class App implements OnInit {
     }
 
     this.transactions = [];
+    this.categoryTotals = {};
 
-    this.groceriesTotal = 0;
-    this.pharmaTotal = 0;
-    this.autoTotal = 0;
+    for (const category of this.categories) {
+      this.transactionService.getByCategory(category.id).subscribe({
+        next: (transactions) => {
+          this.categoryTotals[category.id] = this.calculateTotal(transactions);
 
-    this.transactionService.getByCategory('GROCERIES').subscribe({
-      next: (transactions) => {
-        this.groceriesTotal = this.calculateTotal(transactions);
+          this.transactions.push(...transactions);
 
-        this.transactions.push(...transactions);
+          this.cdr.detectChanges();
+        },
 
-        this.cdr.detectChanges();
-      },
-
-      error: (error) => {
-        console.error('Erro ao carregar GROCERIES:', error);
-      },
-    });
-
-    this.transactionService.getByCategory('PHARMA').subscribe({
-      next: (transactions) => {
-        this.pharmaTotal = this.calculateTotal(transactions);
-
-        this.transactions.push(...transactions);
-
-        this.cdr.detectChanges();
-      },
-
-      error: (error) => {
-        console.error('Erro ao carregar PHARMA:', error);
-      },
-    });
-
-    this.transactionService.getByCategory('AUTO').subscribe({
-      next: (transactions) => {
-        this.autoTotal = this.calculateTotal(transactions);
-
-        this.transactions.push(...transactions);
-
-        this.cdr.detectChanges();
-      },
-
-      error: (error) => {
-        console.error('Erro ao carregar AUTO:', error);
-      },
-    });
+        error: (error) => {
+          console.error(`Erro ao carregar categoria ${category.name}:`, error);
+        },
+      });
+    }
   }
 
   private calculateTotal(transactions: Transaction[]): number {
@@ -275,7 +255,7 @@ export class App implements OnInit {
   }
 
   get totalExpenses(): number {
-    return this.groceriesTotal + this.pharmaTotal + this.autoTotal;
+    return this.transactions.reduce((total, transaction) => total + transaction.amount, 0);
   }
 
   // =========================
@@ -318,21 +298,25 @@ export class App implements OnInit {
     this.newTransaction = {
       description: '',
       amount: 0,
-      category: 'GROCERIES',
+      categoryId: this.categories.length > 0 ? this.categories[0].id : '',
     };
   }
 
   createTransaction(): void {
-    if (!this.newTransaction.description.trim() || this.newTransaction.amount <= 0) {
+    if (
+      !this.newTransaction.description.trim() ||
+      this.newTransaction.amount <= 0 ||
+      !this.newTransaction.categoryId
+    ) {
       return;
     }
 
     const transactionToSend = {
-      description: this.newTransaction.description,
+      description: this.newTransaction.description.trim(),
 
       amount: Math.round(this.newTransaction.amount * 100),
 
-      category: this.newTransaction.category,
+      categoryId: this.newTransaction.categoryId,
     };
 
     this.transactionService.create(transactionToSend).subscribe({

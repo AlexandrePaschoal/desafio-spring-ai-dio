@@ -45,11 +45,7 @@
           />
         </div>
 
-        <button
-          type="submit"
-          class="primary-button login-button"
-          [disabled]="loginLoading"
-        >
+        <button type="submit" class="primary-button login-button" [disabled]="loginLoading">
           @if (loginLoading) {
             Entrando...
           } @else {
@@ -60,893 +56,412 @@
     </section>
   </main>
 } @else {
-<div class="app-shell">
-
-  <aside class="sidebar">
-
-    <div class="brand">
-
-      <div class="brand-icon">
-        💰
-      </div>
-
-      <div>
-        <h1>Smart Budget</h1>
-        <span>Assistente financeiro</span>
-      </div>
-
-    </div>
-
-    <nav class="menu">
-
-      <button
-        type="button"
-        [class.active]="activeSection === 'dashboard'"
-        (click)="setSection('dashboard')"
-      >
-        <span>🏠</span>
-        Dashboard
-      </button>
-
-      <button
-        type="button"
-        [class.active]="activeSection === 'transactions'"
-        (click)="setSection('transactions')"
-      >
-        <span>💳</span>
-        Transações
-      </button>
-
-      <button
-        type="button"
-        [class.active]="activeSection === 'assistant'"
-        (click)="setSection('assistant')"
-      >
-        <span>🤖</span>
-        Assistente IA
-      </button>
-
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <strong>{{ currentUser?.name }}</strong>
-        <span>{{ currentUser?.email }}</span>
-      </div>
-
-      <button
-        type="button"
-        class="logout-button"
-        (click)="logout()"
-      >
-        Sair
-      </button>
-
-      <span>Spring Boot + Angular</span>
-    </div>
-
-  </aside>
-
-
-  <main class="content">
-
-    <!-- ===================== -->
-    <!-- DASHBOARD -->
-    <!-- ===================== -->
-
-    @if (activeSection === 'dashboard') {
-
-      <header class="topbar">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">💰</div>
 
         <div>
-          <p class="eyebrow">
-            Visão geral
-          </p>
-
-          <h2>
-            Dashboard financeiro
-          </h2>
+          <h1>Smart Budget</h1>
+          <span>Assistente financeiro</span>
         </div>
+      </div>
 
+      <nav class="menu">
         <button
-          class="primary-button"
-          (click)="openTransactionModal()"
+          type="button"
+          [class.active]="activeSection === 'dashboard'"
+          (click)="setSection('dashboard')"
         >
-          + Nova transação
+          <span>🏠</span>
+          Dashboard
         </button>
 
-      </header>
+        <button
+          type="button"
+          [class.active]="activeSection === 'transactions'"
+          (click)="setSection('transactions')"
+        >
+          <span>💳</span>
+          Transações
+        </button>
 
+        <button
+          type="button"
+          [class.active]="activeSection === 'assistant'"
+          (click)="setSection('assistant')"
+        >
+          <span>🤖</span>
+          Assistente IA
+        </button>
+      </nav>
 
-      <section class="cards">
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <strong>{{ currentUser?.name }}</strong>
+          <span>{{ currentUser?.email }}</span>
+        </div>
 
-        <article class="card">
+        <button type="button" class="logout-button" (click)="logout()">Sair</button>
 
-          <div class="card-icon">
-            💵
-          </div>
+        <span>Spring Boot + Angular</span>
+      </div>
+    </aside>
 
+    <main class="content">
+      @if (activeSection === 'dashboard') {
+        <header class="topbar">
           <div>
-
-            <span>
-              Total de gastos
-            </span>
-
-            <strong>
-              {{
-                totalExpenses.toLocaleString(
-                  'pt-BR',
-                  {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }
-                )
-              }}
-            </strong>
-
+            <p class="eyebrow">Visão geral</p>
+            <h2>Dashboard financeiro</h2>
           </div>
 
-        </article>
+          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
+        </header>
 
-
-        <article class="card">
-
-          <div class="card-icon">
-            🛒
-          </div>
-
-          <div>
-
-            <span>
-              Supermercado
-            </span>
-
-            <strong>
-              {{
-                groceriesTotal.toLocaleString(
-                  'pt-BR',
-                  {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }
-                )
-              }}
-            </strong>
-
-          </div>
-
-        </article>
-
-
-        <article class="card">
-
-          <div class="card-icon">
-            💊
-          </div>
-
-          <div>
-
-            <span>
-              Farmácia
-            </span>
-
-            <strong>
-              {{
-                pharmaTotal.toLocaleString(
-                  'pt-BR',
-                  {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }
-                )
-              }}
-            </strong>
-
-          </div>
-
-        </article>
-
-
-        <article class="card">
-
-          <div class="card-icon">
-            🚗
-          </div>
-
-          <div>
-
-            <span>
-              Automóvel
-            </span>
-
-            <strong>
-              {{
-                autoTotal.toLocaleString(
-                  'pt-BR',
-                  {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }
-                )
-              }}
-            </strong>
-
-          </div>
-
-        </article>
-
-      </section>
-
-
-      <section class="dashboard-grid">
-
-        <article class="panel">
-
-          <div class="panel-header">
+        <section class="cards">
+          <article class="card">
+            <div class="card-icon">💵</div>
 
             <div>
+              <span>Total de gastos</span>
 
-              <p class="eyebrow">
-                Histórico
-              </p>
+              <strong>
+                {{
+                  totalExpenses.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }}
+              </strong>
+            </div>
+          </article>
 
-              <h3>
-                Últimas transações
-              </h3>
+          @for (category of categories; track category.id) {
+            <article class="card">
+              <div class="card-icon">💳</div>
 
+              <div>
+                <span>{{ category.name }}</span>
+
+                <strong>
+                  {{
+                    (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
+                  }}
+                </strong>
+              </div>
+            </article>
+          }
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Histórico</p>
+                <h3>Últimas transações</h3>
+              </div>
+
+              <button class="ghost-button" (click)="setSection('transactions')">Ver todas</button>
             </div>
 
-            <button
-              class="ghost-button"
-              (click)="setSection('transactions')"
-            >
-              Ver todas
-            </button>
+            <div class="transaction-list">
+              @for (transaction of transactions; track transaction.id) {
+                <div class="transaction-item">
+                  <div class="transaction-info">
+                    <div class="transaction-icon">💳</div>
 
-          </div>
+                    <div>
+                      <strong>
+                        {{ transaction.description }}
+                      </strong>
 
-
-          <div class="transaction-list">
-
-            @for (
-              transaction of transactions;
-              track transaction.id
-            ) {
-
-              <div class="transaction-item">
-
-                <div class="transaction-info">
-
-                  <div class="transaction-icon">
-
-                    @switch (transaction.category) {
-
-                      @case ('GROCERIES') {
-                        🛒
-                      }
-
-                      @case ('PHARMA') {
-                        💊
-                      }
-
-                      @case ('AUTO') {
-                        🚗
-                      }
-
-                      @default {
-                        💳
-                      }
-
-                    }
-
+                      <span class="category-badge">
+                        {{ transaction.category }}
+                      </span>
+                    </div>
                   </div>
 
+                  <strong class="transaction-amount">
+                    {{
+                      transaction.amount.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+              } @empty {
+                <div class="empty-state">
+                  <div class="empty-icon">📄</div>
+
+                  <h4>Nenhuma transação encontrada</h4>
+
+                  <p>Suas transações aparecerão aqui.</p>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="panel assistant-card">
+            <div>
+              <p class="eyebrow">Inteligência Artificial</p>
+
+              <h3>Assistente financeiro</h3>
+
+              <p class="assistant-description">
+                Registre ou consulte gastos usando linguagem natural.
+              </p>
+            </div>
+
+            <div class="assistant-example">“Gastei 35 reais na farmácia”</div>
+
+            <button class="assistant-button" (click)="openAiModal()">🤖 Abrir assistente</button>
+          </article>
+        </section>
+      }
+
+      @if (activeSection === 'transactions') {
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Movimentações</p>
+
+            <h2>Transações</h2>
+          </div>
+
+          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
+        </header>
+
+        <section class="panel transactions-page">
+          <div class="transactions-toolbar">
+            <div class="search-field">
+              <span> 🔎 </span>
+
+              <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por descrição..." />
+            </div>
+
+            <select class="category-filter" [(ngModel)]="selectedCategory">
+              <option value="ALL">Todas as categorias</option>
+
+              @for (category of categories; track category.id) {
+                <option [value]="category.name">
+                  {{ category.name }}
+                </option>
+              }
+            </select>
+
+            <button type="button" class="clear-filter-button" (click)="clearFilters()">
+              Limpar filtros
+            </button>
+          </div>
+
+          <div class="transactions-summary">
+            <div>
+              <span> Transações encontradas </span>
+
+              <strong>
+                {{ filteredTransactions.length }}
+              </strong>
+            </div>
+
+            <div>
+              <span> Total </span>
+
+              <strong>
+                {{
+                  filteredTotal.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="transaction-list">
+            @for (transaction of filteredTransactions; track transaction.id) {
+              <div class="transaction-item">
+                <div class="transaction-info">
+                  <div class="transaction-icon">💳</div>
 
                   <div>
-
                     <strong>
                       {{ transaction.description }}
                     </strong>
 
                     <span class="category-badge">
-                      {{
-                        getCategoryName(
-                          transaction.category
-                        )
-                      }}
+                      {{ transaction.category }}
                     </span>
-
                   </div>
-
                 </div>
-
 
                 <strong class="transaction-amount">
-
                   {{
-                    transaction.amount.toLocaleString(
-                      'pt-BR',
-                      {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }
-                    )
+                    transaction.amount.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
                   }}
-
                 </strong>
-
               </div>
-
             } @empty {
-
               <div class="empty-state">
+                <div class="empty-icon">🔎</div>
 
-                <div class="empty-icon">
-                  📄
-                </div>
+                <h4>Nenhuma transação encontrada</h4>
 
-                <h4>
-                  Nenhuma transação encontrada
-                </h4>
-
-                <p>
-                  Suas transações aparecerão aqui.
-                </p>
-
+                <p>Tente alterar os termos da busca ou os filtros.</p>
               </div>
-
             }
-
           </div>
+        </section>
+      }
+    </main>
+  </div>
 
-        </article>
-
-
-        <article class="panel assistant-card">
-
+  @if (showTransactionModal) {
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">
           <div>
+            <p class="eyebrow">Cadastro</p>
 
-            <p class="eyebrow">
-              Inteligência Artificial
-            </p>
-
-            <h3>
-              Assistente financeiro
-            </h3>
-
-            <p class="assistant-description">
-              Registre ou consulte gastos usando linguagem natural.
-            </p>
-
+            <h3>Nova transação</h3>
           </div>
 
-
-          <div class="assistant-example">
-            “Gastei 35 reais na farmácia”
-          </div>
-
-
-          <button
-            class="assistant-button"
-            (click)="openAiModal()"
-          >
-            🤖 Abrir assistente
-          </button>
-
-        </article>
-
-      </section>
-
-    }
-
-
-    <!-- ===================== -->
-    <!-- TRANSAÇÕES -->
-    <!-- ===================== -->
-
-    @if (activeSection === 'transactions') {
-
-      <header class="topbar">
-
-        <div>
-
-          <p class="eyebrow">
-            Movimentações
-          </p>
-
-          <h2>
-            Transações
-          </h2>
-
+          <button type="button" class="close-button" (click)="closeTransactionModal()">×</button>
         </div>
 
-
-        <button
-          class="primary-button"
-          (click)="openTransactionModal()"
-        >
-          + Nova transação
-        </button>
-
-      </header>
-
-
-      <section class="panel transactions-page">
-
-        <!-- FILTROS -->
-
-        <div class="transactions-toolbar">
-
-          <div class="search-field">
-
-            <span>
-              🔎
-            </span>
+        <form (ngSubmit)="createTransaction()">
+          <div class="form-group">
+            <label for="description"> Descrição </label>
 
             <input
+              id="description"
               type="text"
-              [(ngModel)]="searchTerm"
-              placeholder="Buscar por descrição..."
+              name="description"
+              [(ngModel)]="newTransaction.description"
+              placeholder="Ex.: Compra no supermercado"
+              required
             />
-
           </div>
 
+          <div class="form-group">
+            <label for="amount"> Valor </label>
 
-          <select
-            class="category-filter"
-            [(ngModel)]="selectedCategory"
-          >
-
-            <option value="ALL">
-              Todas as categorias
-            </option>
-
-            <option value="GROCERIES">
-              Supermercado
-            </option>
-
-            <option value="PHARMA">
-              Farmácia
-            </option>
-
-            <option value="AUTO">
-              Automóvel
-            </option>
-
-          </select>
-
-
-          <button
-            type="button"
-            class="clear-filter-button"
-            (click)="clearFilters()"
-          >
-            Limpar filtros
-          </button>
-
-        </div>
-
-
-        <!-- RESUMO -->
-
-        <div class="transactions-summary">
-
-          <div>
-
-            <span>
-              Transações encontradas
-            </span>
-
-            <strong>
-              {{ filteredTransactions.length }}
-            </strong>
-
+            <input
+              id="amount"
+              type="number"
+              name="amount"
+              [(ngModel)]="newTransaction.amount"
+              min="0.01"
+              step="0.01"
+              placeholder="0,00"
+              required
+            />
           </div>
 
-
-          <div>
-
-            <span>
-              Total
-            </span>
-
-            <strong>
-
-              {{
-                filteredTotal.toLocaleString(
-                  'pt-BR',
-                  {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }
-                )
-              }}
-
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <!-- LISTAGEM -->
-
-        <div class="transaction-list">
-
-          @for (
-            transaction of filteredTransactions;
-            track transaction.id
-          ) {
-
-            <div class="transaction-item">
-
-              <div class="transaction-info">
-
-                <div class="transaction-icon">
-
-                  @switch (transaction.category) {
-
-                    @case ('GROCERIES') {
-                      🛒
-                    }
-
-                    @case ('PHARMA') {
-                      💊
-                    }
-
-                    @case ('AUTO') {
-                      🚗
-                    }
-
-                    @default {
-                      💳
-                    }
-
-                  }
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    {{ transaction.description }}
-                  </strong>
-
-                  <span class="category-badge">
-                    {{
-                      getCategoryName(
-                        transaction.category
-                      )
-                    }}
-                  </span>
-
-                </div>
-
-              </div>
-
-
-              <strong class="transaction-amount">
-
-                {{
-                  transaction.amount.toLocaleString(
-                    'pt-BR',
-                    {
-                      style: 'currency',
-                      currency: 'BRL'
-                    }
-                  )
-                }}
-
-              </strong>
-
-            </div>
-
-          } @empty {
-
-            <div class="empty-state">
-
-              <div class="empty-icon">
-                🔎
-              </div>
-
-              <h4>
-                Nenhuma transação encontrada
-              </h4>
-
-              <p>
-                Tente alterar os termos da busca ou os filtros.
-              </p>
-
-            </div>
-
-          }
-
-        </div>
-
-      </section>
-
-    }
-
-  </main>
-
-</div>
-
-
-<!-- ===================== -->
-<!-- MODAL NOVA TRANSAÇÃO -->
-<!-- ===================== -->
-
-@if (showTransactionModal) {
-
-  <div class="modal-backdrop">
-
-    <div class="modal">
-
-      <div class="modal-header">
-
-        <div>
-
-          <p class="eyebrow">
-            Cadastro
-          </p>
-
-          <h3>
-            Nova transação
-          </h3>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="close-button"
-          (click)="closeTransactionModal()"
-        >
-          ✕
-        </button>
-
-      </div>
-
-
-      <form (ngSubmit)="createTransaction()">
-
-        <div class="form-group">
-
-          <label for="description">
-            Descrição
-          </label>
-
-          <input
-            id="description"
-            type="text"
-            name="description"
-            [(ngModel)]="newTransaction.description"
-            placeholder="Ex.: Compra no supermercado"
-            required
-          />
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="amount">
-            Valor
-          </label>
-
-          <input
-            id="amount"
-            type="number"
-            name="amount"
-            [(ngModel)]="newTransaction.amount"
-            min="0.01"
-            step="0.01"
-            placeholder="0,00"
-            required
-          />
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="category">
-            Categoria
-          </label>
-
-
-          <select
-            id="category"
-            name="category"
-            [(ngModel)]="newTransaction.category"
-          >
-
-            <option value="GROCERIES">
-              Supermercado
-            </option>
-
-            <option value="PHARMA">
-              Farmácia
-            </option>
-
-            <option value="AUTO">
-              Automóvel
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div class="modal-actions">
-
-          <button
-            type="button"
-            class="cancel-button"
-            (click)="closeTransactionModal()"
-          >
-            Cancelar
-          </button>
-
-
-          <button
-            type="submit"
-            class="primary-button"
-          >
-            Cadastrar
-          </button>
-
-        </div>
-
-      </form>
-
-    </div>
-
-  </div>
-
-}
-
-
-<!-- ===================== -->
-<!-- MODAL ASSISTENTE IA -->
-<!-- ===================== -->
-
-@if (showAiModal) {
-
-  <div class="modal-backdrop">
-
-    <div class="modal ai-modal">
-
-      <div class="modal-header">
-
-        <div>
-
-          <p class="eyebrow">
-            Inteligência Artificial
-          </p>
-
-          <h3>
-            Assistente financeiro
-          </h3>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="close-button"
-          (click)="closeAiModal()"
-        >
-          ✕
-        </button>
-
-      </div>
-
-
-      <div class="ai-introduction">
-
-        <div class="ai-avatar">
-          🤖
-        </div>
-
-        <p>
-          Você pode registrar ou consultar seus gastos usando linguagem natural.
-        </p>
-
-      </div>
-
-
-      @if (aiResponse) {
-
-        <div class="ai-response">
-
-          <strong>
-            Assistente
-          </strong>
-
-          <p>
-            {{ aiResponse }}
-          </p>
-
-        </div>
-
-      }
-
-
-      <form (ngSubmit)="sendAiMessage()">
-
-        <div class="form-group">
-
-          <label for="aiMessage">
-            O que você deseja fazer?
-          </label>
-
-          <textarea
-            id="aiMessage"
-            name="aiMessage"
-            [(ngModel)]="aiMessage"
-            placeholder="Ex.: Gastei 50 reais no mercado"
-            rows="4"
-            required
-          ></textarea>
-
-        </div>
-
-
-        <div class="ai-actions">
-
-          <div class="audio-controls">
-
-            <button
-              type="button"
-              class="microphone-button"
-              [class.recording]="isRecording"
-              [disabled]="aiLoading"
-              (click)="toggleRecording()"
-            >
-
-              @if (isRecording) {
-                ⏹️
-              } @else {
-                🎤
+          <div class="form-group">
+            <label for="category"> Categoria </label>
+
+            <select id="category" name="category" [(ngModel)]="newTransaction.categoryId" required>
+              @for (category of categories; track category.id) {
+                <option [value]="category.id">
+                  {{ category.name }}
+                </option>
               }
+            </select>
+          </div>
 
+          <div class="modal-actions">
+            <button type="button" class="cancel-button" (click)="closeTransactionModal()">
+              Cancelar
             </button>
 
+            <button type="submit" class="primary-button">Cadastrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 
-            @if (isRecording) {
+  @if (showAiModal) {
+    <div class="modal-backdrop">
+      <div class="modal ai-modal">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Inteligência Artificial</p>
 
-              <span class="recording-label">
-                🔴 Gravando...
-              </span>
-
-            }
-
+            <h3>Assistente financeiro</h3>
           </div>
 
-
-          <button
-            type="submit"
-            class="primary-button"
-            [disabled]="aiLoading || isRecording"
-          >
-
-            @if (aiLoading) {
-              Processando...
-            } @else {
-              Enviar
-            }
-
-          </button>
-
+          <button type="button" class="close-button" (click)="closeAiModal()">×</button>
         </div>
 
-      </form>
+        <div class="ai-introduction">
+          <div class="ai-avatar">🤖</div>
 
+          <p>Você pode registrar ou consultar seus gastos usando linguagem natural.</p>
+        </div>
+
+        @if (aiResponse) {
+          <div class="ai-response">
+            <strong> Assistente </strong>
+
+            <p>
+              {{ aiResponse }}
+            </p>
+          </div>
+        }
+
+        <form (ngSubmit)="sendAiMessage()">
+          <div class="form-group">
+            <label for="aiMessage"> O que você deseja fazer? </label>
+
+            <textarea
+              id="aiMessage"
+              name="aiMessage"
+              [(ngModel)]="aiMessage"
+              placeholder="Ex.: Gastei 50 reais no mercado"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="ai-actions">
+            <div class="audio-controls">
+              <button
+                type="button"
+                class="microphone-button"
+                [class.recording]="isRecording"
+                [disabled]="aiLoading"
+                (click)="toggleRecording()"
+              >
+                @if (isRecording) {
+                  ⏹
+                } @else {
+                  🎤
+                }
+              </button>
+
+              @if (isRecording) {
+                <span class="recording-label"> 🔴 Gravando... </span>
+              }
+            </div>
+
+            <button type="submit" class="primary-button" [disabled]="aiLoading || isRecording">
+              @if (aiLoading) {
+                Processando...
+              } @else {
+                Enviar
+              }
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-
-  </div>
-
-}
+  }
 }
