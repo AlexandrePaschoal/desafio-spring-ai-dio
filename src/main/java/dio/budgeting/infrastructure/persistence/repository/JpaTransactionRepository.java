@@ -1,10 +1,10 @@
 package dio.budgeting.infrastructure.persistence.repository;
 
-import dio.budgeting.domain.Category;
 import dio.budgeting.domain.Transaction;
 import dio.budgeting.domain.TransactionRepository;
 import dio.budgeting.domain.user.User;
 import dio.budgeting.domain.user.UserRepository;
+import dio.budgeting.infrastructure.persistence.entity.CategoryEntity;
 import dio.budgeting.infrastructure.persistence.entity.TransactionEntity;
 import org.springframework.stereotype.Repository;
 
@@ -12,17 +12,32 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public class JpaTransactionRepository implements TransactionRepository {
+public class JpaTransactionRepository
+        implements TransactionRepository {
 
-    private final TransactionEntityRepository transactionEntityRepository;
-    private final UserRepository userRepository;
+    private final TransactionEntityRepository
+            transactionEntityRepository;
+
+    private final UserRepository
+            userRepository;
+
+    private final CategoryEntityRepository
+            categoryEntityRepository;
 
     public JpaTransactionRepository(
             TransactionEntityRepository transactionEntityRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            CategoryEntityRepository categoryEntityRepository
     ) {
-        this.transactionEntityRepository = transactionEntityRepository;
-        this.userRepository = userRepository;
+
+        this.transactionEntityRepository =
+                transactionEntityRepository;
+
+        this.userRepository =
+                userRepository;
+
+        this.categoryEntityRepository =
+                categoryEntityRepository;
     }
 
     @Override
@@ -30,16 +45,34 @@ public class JpaTransactionRepository implements TransactionRepository {
             Transaction transaction,
             UUID userId
     ) {
-        User user = userRepository
-                .findById(userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Usuário não encontrado."
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Usuário não encontrado."
+                                )
+                        );
+
+        CategoryEntity category =
+                categoryEntityRepository
+                        .findByIdAndUserId(
+                                transaction.getCategoryId(),
+                                userId
                         )
-                );
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Categoria inválida."
+                                )
+                        );
 
         TransactionEntity entity =
-                TransactionEntity.from(transaction, user);
+                TransactionEntity.from(
+                        transaction,
+                        user,
+                        category
+                );
 
         return transactionEntityRepository
                 .save(entity)
@@ -47,12 +80,17 @@ public class JpaTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findAllByCategoryAndUserId(
-            Category category,
+    public List<Transaction>
+    findAllByCategoryIdAndUserId(
+            UUID categoryId,
             UUID userId
     ) {
+
         return transactionEntityRepository
-                .findAllByCategoryAndUserId(category, userId)
+                .findAllByCategoryIdAndUserId(
+                        categoryId,
+                        userId
+                )
                 .stream()
                 .map(TransactionEntity::toDomain)
                 .toList();

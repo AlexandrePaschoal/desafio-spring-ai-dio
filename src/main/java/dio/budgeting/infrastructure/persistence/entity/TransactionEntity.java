@@ -1,12 +1,9 @@
 package dio.budgeting.infrastructure.persistence.entity;
 
-import dio.budgeting.domain.Category;
 import dio.budgeting.domain.Transaction;
 import dio.budgeting.domain.TransactionId;
 import dio.budgeting.domain.user.User;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -30,8 +27,9 @@ public class TransactionEntity {
 
     private long amount;
 
-    @Enumerated(EnumType.STRING)
-    private Category category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private CategoryEntity category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -39,23 +37,27 @@ public class TransactionEntity {
 
     public static TransactionEntity from(
             Transaction transaction,
-            User user
+            User user,
+            CategoryEntity category
     ) {
+
         return new TransactionEntity(
                 transaction.getId().uuid(),
                 transaction.getDescription(),
                 transaction.getAmount(),
-                transaction.getCategory(),
+                category,
                 user
         );
     }
 
     public Transaction toDomain() {
+
         return new Transaction(
                 new TransactionId(this.id),
                 this.description,
                 this.amount,
-                this.category
+                this.category.getId(),
+                this.category.getName()
         );
     }
 }

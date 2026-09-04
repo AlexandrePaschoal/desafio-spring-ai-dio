@@ -13,8 +13,12 @@ import java.util.List;
 @Service
 public class CategoryService {
 
+    private static final String UNCATEGORIZED_NAME =
+            "Sem categoria";
+
     private static final List<String> DEFAULT_CATEGORIES =
             List.of(
+                    UNCATEGORIZED_NAME,
                     "Supermercado",
                     "Farmácia",
                     "Automóvel"
@@ -34,7 +38,9 @@ public class CategoryService {
         this.currentUserService = currentUserService;
     }
 
-    public void createDefaultCategories(User user) {
+    public void createDefaultCategories(
+            User user
+    ) {
 
         if (user == null) {
             throw new IllegalArgumentException(
@@ -121,5 +127,31 @@ public class CategoryService {
                 );
 
         return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public CategoryEntity getOrCreateUncategorized(
+            User user
+    ) {
+
+        if (user == null) {
+            throw new IllegalArgumentException(
+                    "Usuário inválido."
+            );
+        }
+
+        return categoryRepository
+                .findByNameIgnoreCaseAndUserId(
+                        UNCATEGORIZED_NAME,
+                        user.getId()
+                )
+                .orElseGet(() ->
+                        categoryRepository.save(
+                                new CategoryEntity(
+                                        UNCATEGORIZED_NAME,
+                                        user
+                                )
+                        )
+                );
     }
 }

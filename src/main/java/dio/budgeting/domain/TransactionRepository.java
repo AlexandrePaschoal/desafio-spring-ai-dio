@@ -10,8 +10,8 @@ public interface TransactionRepository {
             UUID userId
     );
 
-    List<Transaction> findAllByCategoryAndUserId(
-            Category category,
+    List<Transaction> findAllByCategoryIdAndUserId(
+            UUID categoryId,
             UUID userId
     );
 }

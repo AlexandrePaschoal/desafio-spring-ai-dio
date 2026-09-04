@@ -20,6 +20,12 @@ public interface CategoryEntityRepository
             UUID userId
     );
 
+    Optional<CategoryEntity>
+    findByIdAndUserId(
+            UUID id,
+            UUID userId
+    );
+
     boolean existsByNameIgnoreCaseAndUserId(
             String name,
             UUID userId

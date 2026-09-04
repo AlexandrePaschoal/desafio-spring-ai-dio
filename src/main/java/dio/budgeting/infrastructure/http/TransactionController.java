@@ -2,7 +2,7 @@ package dio.budgeting.infrastructure.http;
 
 import dio.budgeting.application.ListTransactionsByCategoryUseCase;
 import dio.budgeting.application.PersistTransactionUseCase;
-import dio.budgeting.domain.Category;
+import java.util.UUID;
 import dio.budgeting.infrastructure.ai.GroqTranscriptionService;
 import dio.budgeting.infrastructure.http.request.TransactionRequest;
 import dio.budgeting.infrastructure.http.response.TransactionResponse;
@@ -116,13 +116,13 @@ public class TransactionController {
         return TransactionResponse.from(transaction);
     }
 
-    @GetMapping("/{category}")
+    @GetMapping("/{categoryId}")
     public List<TransactionResponse> readTransactions(
-            @PathVariable Category category
+            @PathVariable UUID categoryId
     ) {
 
         return listTransactionsByCategoryUseCase
-                .execute(category)
+                .execute(categoryId)
                 .stream()
                 .map(TransactionResponse::from)
                 .toList();
