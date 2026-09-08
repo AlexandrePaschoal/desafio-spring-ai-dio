@@ -9,8 +9,7 @@ import java.util.UUID;
 public interface TransactionEntityRepository
         extends CrudRepository<TransactionEntity, UUID> {
 
-    List<TransactionEntity>
-    findAllByCategoryIdAndUserId(
+    List<TransactionEntity> findAllByCategoryIdAndUserId(
             UUID categoryId,
             UUID userId
     );

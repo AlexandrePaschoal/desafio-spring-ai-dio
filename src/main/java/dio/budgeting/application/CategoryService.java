@@ -4,11 +4,13 @@ import dio.budgeting.domain.user.User;
 import dio.budgeting.domain.user.UserRepository;
 import dio.budgeting.infrastructure.persistence.entity.CategoryEntity;
 import dio.budgeting.infrastructure.persistence.repository.CategoryEntityRepository;
+import dio.budgeting.infrastructure.persistence.repository.TransactionEntityRepository;
 import dio.budgeting.infrastructure.security.CurrentUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CategoryService {
@@ -27,20 +29,21 @@ public class CategoryService {
     private final CategoryEntityRepository categoryRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
+    private final TransactionEntityRepository transactionRepository;
 
     public CategoryService(
             CategoryEntityRepository categoryRepository,
             UserRepository userRepository,
-            CurrentUserService currentUserService
+            CurrentUserService currentUserService,
+            TransactionEntityRepository transactionRepository
     ) {
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
+        this.transactionRepository = transactionRepository;
     }
 
-    public void createDefaultCategories(
-            User user
-    ) {
+    public void createDefaultCategories(User user) {
 
         if (user == null) {
             throw new IllegalArgumentException(
@@ -72,7 +75,7 @@ public class CategoryService {
 
     public List<CategoryEntity> findAllForCurrentUser() {
 
-        var userId =
+        UUID userId =
                 currentUserService.getCurrentUserId();
 
         return categoryRepository
@@ -84,7 +87,7 @@ public class CategoryService {
             String name
     ) {
 
-        var userId =
+        UUID userId =
                 currentUserService.getCurrentUserId();
 
         String normalizedName =
@@ -153,5 +156,70 @@ public class CategoryService {
                                 )
                         )
                 );
+    }
+
+    @Transactional
+    public void deleteForCurrentUser(
+            UUID categoryId
+    ) {
+
+        UUID userId =
+                currentUserService.getCurrentUserId();
+
+        CategoryEntity category =
+                categoryRepository
+                        .findByIdAndUserId(
+                                categoryId,
+                                userId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Categoria não encontrada."
+                                )
+                        );
+
+        if (
+                category.getName()
+                        .equalsIgnoreCase(
+                                UNCATEGORIZED_NAME
+                        )
+        ) {
+            throw new IllegalArgumentException(
+                    "A categoria 'Sem categoria' não pode ser excluída."
+            );
+        }
+
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Usuário não encontrado."
+                                )
+                        );
+
+        CategoryEntity uncategorized =
+                getOrCreateUncategorized(user);
+
+        var transactions =
+                transactionRepository
+                        .findAllByCategoryIdAndUserId(
+                                categoryId,
+                                userId
+                        );
+
+        for (var transaction : transactions) {
+            transaction.setCategory(
+                    uncategorized
+            );
+        }
+
+        transactionRepository.saveAll(
+                transactions
+        );
+
+        categoryRepository.delete(
+                category
+        );
     }
 }
