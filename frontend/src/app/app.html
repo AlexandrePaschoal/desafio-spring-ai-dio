@@ -45,7 +45,11 @@
           />
         </div>
 
-        <button type="submit" class="primary-button login-button" [disabled]="loginLoading">
+        <button
+          type="submit"
+          class="primary-button login-button"
+          [disabled]="loginLoading"
+        >
           @if (loginLoading) {
             Entrando...
           } @else {
@@ -88,6 +92,15 @@
 
         <button
           type="button"
+          [class.active]="activeSection === 'categories'"
+          (click)="setSection('categories')"
+        >
+          <span>📁</span>
+          Categorias
+        </button>
+
+        <button
+          type="button"
           [class.active]="activeSection === 'assistant'"
           (click)="setSection('assistant')"
         >
@@ -102,7 +115,13 @@
           <span>{{ currentUser?.email }}</span>
         </div>
 
-        <button type="button" class="logout-button" (click)="logout()">Sair</button>
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()"
+        >
+          Sair
+        </button>
 
         <span>Spring Boot + Angular</span>
       </div>
@@ -116,7 +135,12 @@
             <h2>Dashboard financeiro</h2>
           </div>
 
-          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
+          <button
+            class="primary-button"
+            (click)="openTransactionModal()"
+          >
+            + Nova transação
+          </button>
         </header>
 
         <section class="cards">
@@ -137,7 +161,7 @@
             </div>
           </article>
 
-          @for (category of categories; track category.id) {
+          @for (category of visibleCategories; track category.id) {
             <article class="card">
               <div class="card-icon">💳</div>
 
@@ -165,7 +189,12 @@
                 <h3>Últimas transações</h3>
               </div>
 
-              <button class="ghost-button" (click)="setSection('transactions')">Ver todas</button>
+              <button
+                class="ghost-button"
+                (click)="setSection('transactions')"
+              >
+                Ver todas
+              </button>
             </div>
 
             <div class="transaction-list">
@@ -197,9 +226,7 @@
               } @empty {
                 <div class="empty-state">
                   <div class="empty-icon">📄</div>
-
                   <h4>Nenhuma transação encontrada</h4>
-
                   <p>Suas transações aparecerão aqui.</p>
                 </div>
               }
@@ -209,7 +236,6 @@
           <article class="panel assistant-card">
             <div>
               <p class="eyebrow">Inteligência Artificial</p>
-
               <h3>Assistente financeiro</h3>
 
               <p class="assistant-description">
@@ -217,9 +243,16 @@
               </p>
             </div>
 
-            <div class="assistant-example">“Gastei 35 reais na farmácia”</div>
+            <div class="assistant-example">
+              “Gastei 35 reais na farmácia”
+            </div>
 
-            <button class="assistant-button" (click)="openAiModal()">🤖 Abrir assistente</button>
+            <button
+              class="assistant-button"
+              (click)="openAiModal()"
+            >
+              🤖 Abrir assistente
+            </button>
           </article>
         </section>
       }
@@ -228,39 +261,56 @@
         <header class="topbar">
           <div>
             <p class="eyebrow">Movimentações</p>
-
             <h2>Transações</h2>
           </div>
 
-          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
+          <button
+            class="primary-button"
+            (click)="openTransactionModal()"
+          >
+            + Nova transação
+          </button>
         </header>
 
         <section class="panel transactions-page">
           <div class="transactions-toolbar">
             <div class="search-field">
-              <span> 🔎 </span>
+              <span>🔎</span>
 
-              <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por descrição..." />
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                placeholder="Buscar por descrição..."
+              />
             </div>
 
-            <select class="category-filter" [(ngModel)]="selectedCategory">
-              <option value="ALL">Todas as categorias</option>
+            <select
+              class="category-filter"
+              [(ngModel)]="selectedCategory"
+            >
+              <option value="ALL">
+                Todas as categorias
+              </option>
 
-              @for (category of categories; track category.id) {
+              @for (category of visibleCategories; track category.id) {
                 <option [value]="category.name">
                   {{ category.name }}
                 </option>
               }
             </select>
 
-            <button type="button" class="clear-filter-button" (click)="clearFilters()">
+            <button
+              type="button"
+              class="clear-filter-button"
+              (click)="clearFilters()"
+            >
               Limpar filtros
             </button>
           </div>
 
           <div class="transactions-summary">
             <div>
-              <span> Transações encontradas </span>
+              <span>Transações encontradas</span>
 
               <strong>
                 {{ filteredTransactions.length }}
@@ -268,7 +318,7 @@
             </div>
 
             <div>
-              <span> Total </span>
+              <span>Total</span>
 
               <strong>
                 {{
@@ -310,10 +360,86 @@
             } @empty {
               <div class="empty-state">
                 <div class="empty-icon">🔎</div>
-
                 <h4>Nenhuma transação encontrada</h4>
-
                 <p>Tente alterar os termos da busca ou os filtros.</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      @if (activeSection === 'categories') {
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Organização</p>
+            <h2>Categorias</h2>
+          </div>
+
+          <button
+            class="primary-button"
+            (click)="openCategoryModal()"
+          >
+            + Nova categoria
+          </button>
+        </header>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Gerenciamento</p>
+              <h3>Suas categorias</h3>
+            </div>
+          </div>
+
+          @if (categoryError) {
+            <div class="login-error">
+              {{ categoryError }}
+            </div>
+          }
+
+          <div class="transaction-list">
+            @for (category of visibleCategories; track category.id) {
+              <div class="transaction-item">
+                <div class="transaction-info">
+                  <div class="transaction-icon">
+                    💳
+                  </div>
+
+                  <div>
+                    <strong>
+                      {{ category.name }}
+                    </strong>
+
+                    <span class="category-badge">
+                      {{
+                        (categoryTotals[category.id] || 0).toLocaleString(
+                          'pt-BR',
+                          {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }
+                        )
+                      }}
+                    </span>
+                  </div>
+                </div>
+
+                @if (category.name.toLowerCase() !== 'sem categoria') {
+                  <button
+                    type="button"
+                    class="clear-filter-button"
+                    [disabled]="categoryLoading"
+                    (click)="deleteCategory(category)"
+                  >
+                    Excluir
+                  </button>
+                }
+              </div>
+            } @empty {
+              <div class="empty-state">
+                <div class="empty-icon">📁</div>
+                <h4>Nenhuma categoria encontrada</h4>
+                <p>Crie uma categoria para organizar suas transações.</p>
               </div>
             }
           </div>
@@ -328,16 +454,23 @@
         <div class="modal-header">
           <div>
             <p class="eyebrow">Cadastro</p>
-
             <h3>Nova transação</h3>
           </div>
 
-          <button type="button" class="close-button" (click)="closeTransactionModal()">×</button>
+          <button
+            type="button"
+            class="close-button"
+            (click)="closeTransactionModal()"
+          >
+            ×
+          </button>
         </div>
 
         <form (ngSubmit)="createTransaction()">
           <div class="form-group">
-            <label for="description"> Descrição </label>
+            <label for="description">
+              Descrição
+            </label>
 
             <input
               id="description"
@@ -350,7 +483,9 @@
           </div>
 
           <div class="form-group">
-            <label for="amount"> Valor </label>
+            <label for="amount">
+              Valor
+            </label>
 
             <input
               id="amount"
@@ -365,10 +500,17 @@
           </div>
 
           <div class="form-group">
-            <label for="category"> Categoria </label>
+            <label for="category">
+              Categoria
+            </label>
 
-            <select id="category" name="category" [(ngModel)]="newTransaction.categoryId" required>
-              @for (category of categories; track category.id) {
+            <select
+              id="category"
+              name="category"
+              [(ngModel)]="newTransaction.categoryId"
+              required
+            >
+              @for (category of selectableCategories; track category.id) {
                 <option [value]="category.id">
                   {{ category.name }}
                 </option>
@@ -377,11 +519,88 @@
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="cancel-button" (click)="closeTransactionModal()">
+            <button
+              type="button"
+              class="cancel-button"
+              (click)="closeTransactionModal()"
+            >
               Cancelar
             </button>
 
-            <button type="submit" class="primary-button">Cadastrar</button>
+            <button
+              type="submit"
+              class="primary-button"
+            >
+              Cadastrar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (showCategoryModal) {
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Cadastro</p>
+            <h3>Nova categoria</h3>
+          </div>
+
+          <button
+            type="button"
+            class="close-button"
+            (click)="closeCategoryModal()"
+          >
+            ×
+          </button>
+        </div>
+
+        @if (categoryError) {
+          <div class="login-error">
+            {{ categoryError }}
+          </div>
+        }
+
+        <form (ngSubmit)="createCategory()">
+          <div class="form-group">
+            <label for="categoryName">
+              Nome da categoria
+            </label>
+
+            <input
+              id="categoryName"
+              type="text"
+              name="categoryName"
+              [(ngModel)]="newCategoryName"
+              placeholder="Ex.: Faculdade"
+              maxlength="100"
+              required
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="cancel-button"
+              (click)="closeCategoryModal()"
+              [disabled]="categoryLoading"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="categoryLoading"
+            >
+              @if (categoryLoading) {
+                Cadastrando...
+              } @else {
+                Cadastrar
+              }
+            </button>
           </div>
         </form>
       </div>
@@ -394,32 +613,38 @@
         <div class="modal-header">
           <div>
             <p class="eyebrow">Inteligência Artificial</p>
-
             <h3>Assistente financeiro</h3>
           </div>
 
-          <button type="button" class="close-button" (click)="closeAiModal()">×</button>
+          <button
+            type="button"
+            class="close-button"
+            (click)="closeAiModal()"
+          >
+            ×
+          </button>
         </div>
 
         <div class="ai-introduction">
           <div class="ai-avatar">🤖</div>
 
-          <p>Você pode registrar ou consultar seus gastos usando linguagem natural.</p>
+          <p>
+            Você pode registrar ou consultar seus gastos usando linguagem natural.
+          </p>
         </div>
 
         @if (aiResponse) {
           <div class="ai-response">
-            <strong> Assistente </strong>
-
-            <p>
-              {{ aiResponse }}
-            </p>
+            <strong>Assistente</strong>
+            <p>{{ aiResponse }}</p>
           </div>
         }
 
         <form (ngSubmit)="sendAiMessage()">
           <div class="form-group">
-            <label for="aiMessage"> O que você deseja fazer? </label>
+            <label for="aiMessage">
+              O que você deseja fazer?
+            </label>
 
             <textarea
               id="aiMessage"
@@ -448,11 +673,17 @@
               </button>
 
               @if (isRecording) {
-                <span class="recording-label"> 🔴 Gravando... </span>
+                <span class="recording-label">
+                  🔴 Gravando...
+                </span>
               }
             </div>
 
-            <button type="submit" class="primary-button" [disabled]="aiLoading || isRecording">
+            <button
+              type="submit"
+              class="primary-button"
+              [disabled]="aiLoading || isRecording"
+            >
               @if (aiLoading) {
                 Processando...
               } @else {

@@ -39,7 +39,7 @@ export class App implements OnInit {
   // NAVEGAÇÃO
   // =========================
 
-  activeSection: 'dashboard' | 'transactions' | 'assistant' = 'dashboard';
+  activeSection: 'dashboard' | 'transactions' | 'categories' | 'assistant' = 'dashboard';
 
   // =========================
   // DASHBOARD
@@ -69,6 +69,17 @@ export class App implements OnInit {
     amount: 0,
     categoryId: '',
   };
+
+  // =========================
+  // CATEGORIAS
+  // =========================
+
+  showCategoryModal = false;
+
+  newCategoryName = '';
+
+  categoryLoading = false;
+  categoryError = '';
 
   // =========================
   // ASSISTENTE IA
@@ -103,6 +114,7 @@ export class App implements OnInit {
 
     if (this.isAuthenticated) {
       this.currentUser = this.authService.getUser();
+
       this.loadCategories();
     }
   }
@@ -113,10 +125,12 @@ export class App implements OnInit {
 
   login(): void {
     const email = this.loginData.email.trim();
+
     const password = this.loginData.password;
 
     if (!email || !password) {
       this.loginError = 'Informe seu e-mail e sua senha.';
+
       return;
     }
 
@@ -126,6 +140,7 @@ export class App implements OnInit {
     this.authService.login(email, password).subscribe({
       next: (response) => {
         this.isAuthenticated = true;
+
         this.currentUser = response.user;
 
         this.loginData = {
@@ -144,6 +159,7 @@ export class App implements OnInit {
         console.error('Erro ao realizar login:', error);
 
         this.loginError = 'E-mail ou senha inválidos.';
+
         this.loginLoading = false;
 
         this.cdr.detectChanges();
@@ -174,6 +190,12 @@ export class App implements OnInit {
     this.selectedCategory = 'ALL';
 
     this.showTransactionModal = false;
+
+    this.showCategoryModal = false;
+    this.newCategoryName = '';
+    this.categoryError = '';
+    this.categoryLoading = false;
+
     this.showAiModal = false;
 
     this.aiMessage = '';
@@ -186,7 +208,7 @@ export class App implements OnInit {
   // NAVEGAÇÃO
   // =========================
 
-  setSection(section: 'dashboard' | 'transactions' | 'assistant'): void {
+  setSection(section: 'dashboard' | 'transactions' | 'categories' | 'assistant'): void {
     this.activeSection = section;
 
     if (section === 'assistant') {
@@ -207,8 +229,14 @@ export class App implements OnInit {
       next: (categories) => {
         this.categories = categories;
 
-        if (!this.newTransaction.categoryId && categories.length > 0) {
-          this.newTransaction.categoryId = categories[0].id;
+        /*
+         * "Sem categoria" não deve ser
+         * selecionada automaticamente.
+         */
+        const firstSelectableCategory = this.selectableCategories[0];
+
+        if (!this.newTransaction.categoryId && firstSelectableCategory) {
+          this.newTransaction.categoryId = firstSelectableCategory.id;
         }
 
         this.loadTransactions();
@@ -221,6 +249,132 @@ export class App implements OnInit {
       },
     });
   }
+
+  /*
+   * Categorias que podem aparecer
+   * visualmente para o usuário.
+   *
+   * "Sem categoria" só aparece
+   * quando possui alguma transação.
+   */
+  get visibleCategories(): Category[] {
+    return this.categories.filter((category) => {
+      if (category.name.toLowerCase() !== 'sem categoria') {
+        return true;
+      }
+
+      return (this.categoryTotals[category.id] || 0) > 0;
+    });
+  }
+
+  /*
+   * Categorias disponíveis para
+   * seleção manual ao cadastrar
+   * uma transação.
+   *
+   * "Sem categoria" funciona apenas
+   * como fallback do sistema.
+   */
+  get selectableCategories(): Category[] {
+    return this.categories.filter((category) => category.name.toLowerCase() !== 'sem categoria');
+  }
+
+  openCategoryModal(): void {
+    this.newCategoryName = '';
+    this.categoryError = '';
+    this.showCategoryModal = true;
+  }
+
+  closeCategoryModal(): void {
+    this.showCategoryModal = false;
+    this.newCategoryName = '';
+    this.categoryError = '';
+  }
+
+  createCategory(): void {
+    const name = this.newCategoryName.trim();
+
+    if (!name) {
+      this.categoryError = 'Informe o nome da categoria.';
+
+      return;
+    }
+
+    this.categoryLoading = true;
+    this.categoryError = '';
+
+    this.categoryService.create(name).subscribe({
+      next: () => {
+        this.categoryLoading = false;
+
+        this.closeCategoryModal();
+
+        this.loadCategories();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao criar categoria:', error);
+
+        this.categoryError = error.error?.message || 'Não foi possível criar a categoria.';
+
+        this.categoryLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  deleteCategory(category: Category): void {
+    /*
+     * Proteção também no frontend.
+     * O backend continua sendo a
+     * proteção definitiva.
+     */
+    if (category.name.toLowerCase() === 'sem categoria') {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Deseja realmente excluir a categoria "${category.name}"?\n\n` +
+        `As transações dessa categoria serão movidas para "Sem categoria".`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.categoryLoading = true;
+    this.categoryError = '';
+
+    this.categoryService.delete(category.id).subscribe({
+      next: () => {
+        this.categoryLoading = false;
+
+        /*
+         * Recarregamos categorias e
+         * transações porque o backend
+         * pode ter movido transações
+         * para "Sem categoria".
+         */
+        this.loadCategories();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao excluir categoria:', error);
+
+        this.categoryError = error.error?.message || 'Não foi possível excluir a categoria.';
+
+        this.categoryLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   // =========================
   // TRANSAÇÕES
   // =========================
@@ -289,6 +443,14 @@ export class App implements OnInit {
   // =========================
 
   openTransactionModal(): void {
+    /*
+     * Garante uma categoria válida
+     * caso ainda não exista seleção.
+     */
+    if (!this.newTransaction.categoryId && this.selectableCategories.length > 0) {
+      this.newTransaction.categoryId = this.selectableCategories[0].id;
+    }
+
     this.showTransactionModal = true;
   }
 
@@ -298,7 +460,7 @@ export class App implements OnInit {
     this.newTransaction = {
       description: '',
       amount: 0,
-      categoryId: this.categories.length > 0 ? this.categories[0].id : '',
+      categoryId: this.selectableCategories.length > 0 ? this.selectableCategories[0].id : '',
     };
   }
 

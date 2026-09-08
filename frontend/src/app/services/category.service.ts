@@ -15,4 +15,14 @@ export class CategoryService {
   findAll(): Observable<Category[]> {
     return this.http.get<Category[]>(this.apiUrl);
   }
+
+  create(name: string): Observable<Category> {
+    return this.http.post<Category>(this.apiUrl, {
+      name: name,
+    });
+  }
+
+  delete(categoryId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${categoryId}`);
+  }
 }
