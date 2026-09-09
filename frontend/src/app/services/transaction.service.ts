@@ -20,6 +20,7 @@ export class TransactionService {
     description: string;
     amount: number;
     categoryId: string;
+    type: 'INCOME' | 'EXPENSE';
   }): Observable<Transaction> {
     return this.http.post<Transaction>(this.apiUrl, transaction);
   }

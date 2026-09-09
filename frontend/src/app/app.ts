@@ -68,6 +68,7 @@ export class App implements OnInit {
     description: '',
     amount: 0,
     categoryId: '',
+    type: 'EXPENSE' as 'INCOME' | 'EXPENSE',
   };
 
   // =========================
@@ -229,10 +230,6 @@ export class App implements OnInit {
       next: (categories) => {
         this.categories = categories;
 
-        /*
-         * "Sem categoria" não deve ser
-         * selecionada automaticamente.
-         */
         const firstSelectableCategory = this.selectableCategories[0];
 
         if (!this.newTransaction.categoryId && firstSelectableCategory) {
@@ -250,31 +247,18 @@ export class App implements OnInit {
     });
   }
 
-  /*
-   * Categorias que podem aparecer
-   * visualmente para o usuário.
-   *
-   * "Sem categoria" só aparece
-   * quando possui alguma transação.
-   */
   get visibleCategories(): Category[] {
     return this.categories.filter((category) => {
       if (category.name.toLowerCase() !== 'sem categoria') {
         return true;
       }
 
-      return (this.categoryTotals[category.id] || 0) > 0;
+      return this.transactions.some(
+        (transaction) => transaction.category.toLowerCase() === 'sem categoria',
+      );
     });
   }
 
-  /*
-   * Categorias disponíveis para
-   * seleção manual ao cadastrar
-   * uma transação.
-   *
-   * "Sem categoria" funciona apenas
-   * como fallback do sistema.
-   */
   get selectableCategories(): Category[] {
     return this.categories.filter((category) => category.name.toLowerCase() !== 'sem categoria');
   }
@@ -327,11 +311,6 @@ export class App implements OnInit {
   }
 
   deleteCategory(category: Category): void {
-    /*
-     * Proteção também no frontend.
-     * O backend continua sendo a
-     * proteção definitiva.
-     */
     if (category.name.toLowerCase() === 'sem categoria') {
       return;
     }
@@ -352,12 +331,6 @@ export class App implements OnInit {
       next: () => {
         this.categoryLoading = false;
 
-        /*
-         * Recarregamos categorias e
-         * transações porque o backend
-         * pode ter movido transações
-         * para "Sem categoria".
-         */
         this.loadCategories();
 
         this.cdr.detectChanges();
@@ -390,7 +363,7 @@ export class App implements OnInit {
     for (const category of this.categories) {
       this.transactionService.getByCategory(category.id).subscribe({
         next: (transactions) => {
-          this.categoryTotals[category.id] = this.calculateTotal(transactions);
+          this.categoryTotals[category.id] = this.calculateExpenseTotal(transactions);
 
           this.transactions.push(...transactions);
 
@@ -404,12 +377,30 @@ export class App implements OnInit {
     }
   }
 
-  private calculateTotal(transactions: Transaction[]): number {
-    return transactions.reduce((total, transaction) => total + transaction.amount, 0);
+  private calculateExpenseTotal(transactions: Transaction[]): number {
+    return transactions
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  // =========================
+  // RESUMO FINANCEIRO
+  // =========================
+
+  get totalIncome(): number {
+    return this.transactions
+      .filter((transaction) => transaction.type === 'INCOME')
+      .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
   get totalExpenses(): number {
-    return this.transactions.reduce((total, transaction) => total + transaction.amount, 0);
+    return this.transactions
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  get balance(): number {
+    return this.totalIncome - this.totalExpenses;
   }
 
   // =========================
@@ -430,7 +421,13 @@ export class App implements OnInit {
   }
 
   get filteredTotal(): number {
-    return this.filteredTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+    return this.filteredTransactions.reduce((total, transaction) => {
+      if (transaction.type === 'INCOME') {
+        return total + transaction.amount;
+      }
+
+      return total - transaction.amount;
+    }, 0);
   }
 
   clearFilters(): void {
@@ -443,10 +440,6 @@ export class App implements OnInit {
   // =========================
 
   openTransactionModal(): void {
-    /*
-     * Garante uma categoria válida
-     * caso ainda não exista seleção.
-     */
     if (!this.newTransaction.categoryId && this.selectableCategories.length > 0) {
       this.newTransaction.categoryId = this.selectableCategories[0].id;
     }
@@ -460,7 +453,10 @@ export class App implements OnInit {
     this.newTransaction = {
       description: '',
       amount: 0,
+
       categoryId: this.selectableCategories.length > 0 ? this.selectableCategories[0].id : '',
+
+      type: 'EXPENSE',
     };
   }
 
@@ -479,6 +475,8 @@ export class App implements OnInit {
       amount: Math.round(this.newTransaction.amount * 100),
 
       categoryId: this.newTransaction.categoryId,
+
+      type: this.newTransaction.type,
     };
 
     this.transactionService.create(transactionToSend).subscribe({

@@ -1,6 +1,7 @@
 package dio.budgeting.infrastructure.http.request;
 
 import dio.budgeting.application.input.PersistTransactionInput;
+import dio.budgeting.domain.TransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -27,16 +28,24 @@ public record TransactionRequest(
         @Positive(
                 message = "O valor da transação deve ser maior que zero."
         )
-        long amount
+        long amount,
+
+        TransactionType type
 
 ) {
 
     public PersistTransactionInput toInput() {
 
+        TransactionType transactionType =
+                type != null
+                        ? type
+                        : TransactionType.EXPENSE;
+
         return new PersistTransactionInput(
                 description.trim(),
                 amount,
-                categoryId
+                categoryId,
+                transactionType
         );
     }
 }

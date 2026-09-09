@@ -1,6 +1,7 @@
 package dio.budgeting.application.output;
 
 import dio.budgeting.domain.Transaction;
+import dio.budgeting.domain.TransactionType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,6 +10,7 @@ public record TransactionOutput(
         String id,
         String description,
         String category,
+        TransactionType type,
         double value
 ) {
 
@@ -24,6 +26,8 @@ public record TransactionOutput(
                 transaction.getDescription(),
 
                 transaction.getCategoryName(),
+
+                transaction.getType(),
 
                 BigDecimal
                         .valueOf(

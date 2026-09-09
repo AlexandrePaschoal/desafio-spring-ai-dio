@@ -40,6 +40,7 @@ public class PersistTransactionUseCase {
                         new Transaction(
                                 input.description(),
                                 input.amount(),
+                                input.type(),
                                 input.categoryId(),
                                 null
                         ),
