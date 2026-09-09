@@ -1,8 +1,9 @@
 package dio.budgeting.infrastructure.http;
 
 import dio.budgeting.application.ListTransactionsByCategoryUseCase;
+import dio.budgeting.application.ListUserCategoriesUseCase;
+import dio.budgeting.application.PersistAiTransactionUseCase;
 import dio.budgeting.application.PersistTransactionUseCase;
-import java.util.UUID;
 import dio.budgeting.infrastructure.ai.GroqTranscriptionService;
 import dio.budgeting.infrastructure.http.request.TransactionRequest;
 import dio.budgeting.infrastructure.http.response.TransactionResponse;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/transactions")
@@ -50,6 +52,12 @@ public class TransactionController {
     private final ListTransactionsByCategoryUseCase
             listTransactionsByCategoryUseCase;
 
+    private final PersistAiTransactionUseCase
+            persistAiTransactionUseCase;
+
+    private final ListUserCategoriesUseCase
+            listUserCategoriesUseCase;
+
     private final ChatClient chatClient;
 
     private final GroqTranscriptionService
@@ -64,6 +72,8 @@ public class TransactionController {
     public TransactionController(
             PersistTransactionUseCase persistTransactionUseCase,
             ListTransactionsByCategoryUseCase listTransactionsByCategoryUseCase,
+            PersistAiTransactionUseCase persistAiTransactionUseCase,
+            ListUserCategoriesUseCase listUserCategoriesUseCase,
             @Value("classpath:prompts/system-message.st")
             Resource systemPrompt,
             ChatClient.Builder chatClientBuilder,
@@ -77,6 +87,12 @@ public class TransactionController {
 
         this.listTransactionsByCategoryUseCase =
                 listTransactionsByCategoryUseCase;
+
+        this.persistAiTransactionUseCase =
+                persistAiTransactionUseCase;
+
+        this.listUserCategoriesUseCase =
+                listUserCategoriesUseCase;
 
         this.groqTranscriptionService =
                 groqTranscriptionService;
@@ -94,7 +110,8 @@ public class TransactionController {
                         )
                 )
                 .defaultTools(
-                        persistTransactionUseCase,
+                        listUserCategoriesUseCase,
+                        persistAiTransactionUseCase,
                         listTransactionsByCategoryUseCase
                 )
                 .build();
@@ -113,7 +130,9 @@ public class TransactionController {
                         request.toInput()
                 );
 
-        return TransactionResponse.from(transaction);
+        return TransactionResponse.from(
+                transaction
+        );
     }
 
     @GetMapping("/{categoryId}")
@@ -136,8 +155,10 @@ public class TransactionController {
             @RequestBody String userMessage
     ) {
 
-        if (userMessage == null
-                || userMessage.isBlank()) {
+        if (
+                userMessage == null
+                        || userMessage.isBlank()
+        ) {
 
             return ResponseEntity
                     .badRequest()
@@ -149,8 +170,10 @@ public class TransactionController {
         String normalizedMessage =
                 userMessage.trim();
 
-        if (normalizedMessage.length()
-                > MAX_AI_MESSAGE_LENGTH) {
+        if (
+                normalizedMessage.length()
+                        > MAX_AI_MESSAGE_LENGTH
+        ) {
 
             return ResponseEntity
                     .status(
@@ -168,13 +191,16 @@ public class TransactionController {
             return rateLimitResponse;
         }
 
-        String response = chatClient
-                .prompt()
-                .user(normalizedMessage)
-                .call()
-                .content();
+        String response =
+                chatClient
+                        .prompt()
+                        .user(normalizedMessage)
+                        .call()
+                        .content();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                response
+        );
     }
 
     @PostMapping(
@@ -186,7 +212,10 @@ public class TransactionController {
             MultipartFile file
     ) {
 
-        if (file == null || file.isEmpty()) {
+        if (
+                file == null
+                        || file.isEmpty()
+        ) {
 
             return ResponseEntity
                     .badRequest()
@@ -195,7 +224,10 @@ public class TransactionController {
                     );
         }
 
-        if (file.getSize() > MAX_AUDIO_SIZE) {
+        if (
+                file.getSize()
+                        > MAX_AUDIO_SIZE
+        ) {
 
             return ResponseEntity
                     .status(
@@ -209,7 +241,11 @@ public class TransactionController {
         String contentType =
                 file.getContentType();
 
-        if (!isAllowedAudioType(contentType)) {
+        if (
+                !isAllowedAudioType(
+                        contentType
+                )
+        ) {
 
             return ResponseEntity
                     .status(
@@ -233,13 +269,16 @@ public class TransactionController {
                     groqTranscriptionService
                             .transcribe(file);
 
-            String response = chatClient
-                    .prompt()
-                    .user(transcription)
-                    .call()
-                    .content();
+            String response =
+                    chatClient
+                            .prompt()
+                            .user(transcription)
+                            .call()
+                            .content();
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    response
+            );
 
         } catch (IOException e) {
 
@@ -263,7 +302,8 @@ public class TransactionController {
     validateAiRateLimit() {
 
         var userId =
-                currentUserService.getCurrentUserId();
+                currentUserService
+                        .getCurrentUserId();
 
         boolean allowed =
                 aiRateLimitService
@@ -287,8 +327,10 @@ public class TransactionController {
             String contentType
     ) {
 
-        if (contentType == null
-                || contentType.isBlank()) {
+        if (
+                contentType == null
+                        || contentType.isBlank()
+        ) {
 
             return false;
         }

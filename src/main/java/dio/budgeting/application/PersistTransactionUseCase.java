@@ -5,7 +5,6 @@ import dio.budgeting.application.output.TransactionOutput;
 import dio.budgeting.domain.Transaction;
 import dio.budgeting.domain.TransactionRepository;
 import dio.budgeting.infrastructure.security.CurrentUserService;
-import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,10 +28,6 @@ public class PersistTransactionUseCase {
                 currentUserService;
     }
 
-    @Tool(
-            name = "persist-transaction",
-            description = "Persiste uma nova transação financeira"
-    )
     public TransactionOutput execute(
             PersistTransactionInput input
     ) {

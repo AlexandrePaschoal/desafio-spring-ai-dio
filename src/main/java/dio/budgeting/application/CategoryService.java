@@ -82,6 +82,37 @@ public class CategoryService {
                 .findAllByUserId(userId);
     }
 
+    public CategoryEntity findByNameForCurrentUser(
+            String name
+    ) {
+
+        UUID userId =
+                currentUserService.getCurrentUserId();
+
+        String normalizedName =
+                name == null
+                        ? ""
+                        : name.trim();
+
+        if (normalizedName.isBlank()) {
+            throw new IllegalArgumentException(
+                    "O nome da categoria é obrigatório."
+            );
+        }
+
+        return categoryRepository
+                .findByNameIgnoreCaseAndUserId(
+                        normalizedName,
+                        userId
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Categoria não encontrada para este usuário: "
+                                        + normalizedName
+                        )
+                );
+    }
+
     @Transactional
     public CategoryEntity createForCurrentUser(
             String name
