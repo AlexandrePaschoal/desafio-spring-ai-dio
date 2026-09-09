@@ -41,6 +41,8 @@ public class PersistTransactionUseCase {
                                 input.description(),
                                 input.amount(),
                                 input.type(),
+                                input.date(),
+                                input.status(),
                                 input.categoryId(),
                                 null
                         ),

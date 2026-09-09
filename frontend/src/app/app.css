@@ -347,6 +347,55 @@
   letter-spacing: 0.04em;
 }
 
+.transaction-metadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 5px;
+}
+
+.transaction-date {
+  color: #94a3b8;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 3px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.status-badge.completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.transaction-amount.income {
+  color: #15803d;
+}
+
+.transaction-amount.expense {
+  color: #b91c1c;
+}
+
 .transaction-amount {
   color: #172033;
 
@@ -439,38 +488,56 @@
   font-weight: 700;
 }
 
-/* MODAL */
+/* =========================
+   MODAIS
+   ========================= */
 
 .modal-backdrop {
   position: fixed;
-
   inset: 0;
-
-  background: rgba(15, 23, 42, 0.55);
+  z-index: 1000;
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
-  padding: 20px;
+  padding: 24px;
 
-  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+
+  overflow-y: auto;
+
+  overscroll-behavior: contain;
 }
 
 .modal {
-  width: 100%;
+  width: min(100%, 520px);
 
-  max-width: 480px;
+  max-height: calc(100dvh - 48px);
+
+  padding: 26px;
+
+  overflow-y: auto;
 
   background: #ffffff;
 
-  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
 
-  padding: 28px;
-
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.08);
 }
+
+.ai-modal {
+  width: min(100%, 600px);
+
+  max-height: calc(100dvh - 48px);
+
+  overflow-y: auto;
+}
+
+/* CABEÇALHO DO MODAL */
 
 .modal-header {
   display: flex;
@@ -478,23 +545,33 @@
   justify-content: space-between;
   align-items: flex-start;
 
+  gap: 20px;
+
   margin-bottom: 26px;
 }
 
 .modal-header h3 {
   margin: 0;
+
   font-size: 24px;
 }
 
 .close-button {
+  flex-shrink: 0;
+
   border: none;
 
   background: transparent;
 
   color: #64748b;
 
-  font-size: 18px;
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
 }
+
+/* FORMULÁRIOS */
 
 .form-group {
   display: flex;
@@ -515,6 +592,7 @@
 .form-group input,
 .form-group select {
   width: 100%;
+  min-width: 0;
 
   padding: 12px 14px;
 
@@ -535,6 +613,34 @@
 .form-group select:focus {
   border-color: #64748b;
 }
+
+/* STATUS PAGO / RECEBIDO */
+
+.status-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: pointer;
+}
+
+.status-checkbox input {
+  width: auto;
+  margin: 0;
+
+  accent-color: #111827;
+}
+
+.status-help {
+  color: #64748b;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* AÇÕES */
 
 .modal-actions {
   display: flex;
@@ -560,57 +666,84 @@
   font-weight: 600;
 }
 
-/* RESPONSIVO */
+/* =========================
+   RESPONSIVIDADE DOS MODAIS
+   ========================= */
 
-@media (max-width: 1100px) {
-  .cards {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-height: 750px) {
+  .modal-backdrop {
+    align-items: flex-start;
+
+    padding-top: 16px;
+    padding-bottom: 16px;
   }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr;
+  .modal,
+  .ai-modal {
+    max-height: calc(100dvh - 32px);
   }
 }
 
-@media (max-width: 760px) {
-  .app-shell {
-    display: block;
+@media (max-width: 600px) {
+  .modal-backdrop {
+    align-items: flex-start;
+
+    padding: 8px;
   }
 
-  .sidebar {
+  .modal,
+  .ai-modal {
     width: 100%;
-    min-height: auto;
+
+    max-height: calc(100dvh - 16px);
+
+    padding: 20px 16px;
+
+    margin: 0;
+
+    border-radius: 14px;
   }
 
-  .sidebar-footer {
-    display: none;
+  .modal-header {
+    margin-bottom: 20px;
   }
 
-  .content {
-    padding: 22px;
+  .modal-header h3 {
+    font-size: 21px;
   }
 
-  .cards {
-    grid-template-columns: 1fr;
+  .form-group {
+    margin-bottom: 16px;
   }
 
-  .topbar {
-    align-items: flex-start;
+  .modal-actions {
+    position: sticky;
+    bottom: -20px;
 
-    gap: 16px;
+    margin-left: -16px;
+    margin-right: -16px;
+    margin-bottom: -20px;
 
-    flex-direction: column;
+    padding: 14px 16px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #e5e7eb;
   }
 
-  .transaction-item {
-    align-items: flex-start;
-
-    gap: 12px;
+  .modal-actions button {
+    flex: 1;
   }
 }
 
-.ai-modal {
-  max-width: 560px;
+@media (max-width: 380px) {
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
 }
 
 .ai-introduction {

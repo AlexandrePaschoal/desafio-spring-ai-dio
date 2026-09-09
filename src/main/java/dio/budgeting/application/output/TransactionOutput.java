@@ -1,16 +1,20 @@
 package dio.budgeting.application.output;
 
 import dio.budgeting.domain.Transaction;
+import dio.budgeting.domain.TransactionStatus;
 import dio.budgeting.domain.TransactionType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 
 public record TransactionOutput(
         String id,
         String description,
         String category,
         TransactionType type,
+        LocalDate date,
+        TransactionStatus status,
         double value
 ) {
 
@@ -28,6 +32,10 @@ public record TransactionOutput(
                 transaction.getCategoryName(),
 
                 transaction.getType(),
+
+                transaction.getDate(),
+
+                transaction.getStatus(),
 
                 BigDecimal
                         .valueOf(

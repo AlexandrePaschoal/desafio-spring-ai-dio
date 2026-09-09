@@ -46,7 +46,6 @@ export class App implements OnInit {
   // =========================
 
   categories: Category[] = [];
-
   transactions: Transaction[] = [];
 
   categoryTotals: Record<string, number> = {};
@@ -69,6 +68,8 @@ export class App implements OnInit {
     amount: 0,
     categoryId: '',
     type: 'EXPENSE' as 'INCOME' | 'EXPENSE',
+    date: this.getTodayDate(),
+    status: 'COMPLETED' as 'PENDING' | 'COMPLETED',
   };
 
   // =========================
@@ -118,6 +119,30 @@ export class App implements OnInit {
 
       this.loadCategories();
     }
+  }
+
+  // =========================
+  // UTILITÁRIOS
+  // =========================
+
+  private getTodayDate(): string {
+    const today = new Date();
+
+    const year = today.getFullYear();
+
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  get transactionCompleted(): boolean {
+    return this.newTransaction.status === 'COMPLETED';
+  }
+
+  set transactionCompleted(completed: boolean) {
+    this.newTransaction.status = completed ? 'COMPLETED' : 'PENDING';
   }
 
   // =========================
@@ -444,6 +469,10 @@ export class App implements OnInit {
       this.newTransaction.categoryId = this.selectableCategories[0].id;
     }
 
+    if (!this.newTransaction.date) {
+      this.newTransaction.date = this.getTodayDate();
+    }
+
     this.showTransactionModal = true;
   }
 
@@ -457,6 +486,10 @@ export class App implements OnInit {
       categoryId: this.selectableCategories.length > 0 ? this.selectableCategories[0].id : '',
 
       type: 'EXPENSE',
+
+      date: this.getTodayDate(),
+
+      status: 'COMPLETED',
     };
   }
 
@@ -464,7 +497,8 @@ export class App implements OnInit {
     if (
       !this.newTransaction.description.trim() ||
       this.newTransaction.amount <= 0 ||
-      !this.newTransaction.categoryId
+      !this.newTransaction.categoryId ||
+      !this.newTransaction.date
     ) {
       return;
     }
@@ -477,6 +511,10 @@ export class App implements OnInit {
       categoryId: this.newTransaction.categoryId,
 
       type: this.newTransaction.type,
+
+      date: this.newTransaction.date,
+
+      status: this.newTransaction.status,
     };
 
     this.transactionService.create(transactionToSend).subscribe({

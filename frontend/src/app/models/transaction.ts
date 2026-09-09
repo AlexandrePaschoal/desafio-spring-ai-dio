@@ -3,5 +3,7 @@ export interface Transaction {
   category: string;
   description: string;
   type: 'INCOME' | 'EXPENSE';
+  date: string;
+  status: 'PENDING' | 'COMPLETED';
   amount: number;
 }

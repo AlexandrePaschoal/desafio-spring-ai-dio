@@ -21,6 +21,8 @@ export class TransactionService {
     amount: number;
     categoryId: string;
     type: 'INCOME' | 'EXPENSE';
+    date: string;
+    status: 'PENDING' | 'COMPLETED';
   }): Observable<Transaction> {
     return this.http.post<Transaction>(this.apiUrl, transaction);
   }

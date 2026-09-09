@@ -58,6 +58,8 @@ public class PersistAiTransactionUseCase {
                                 input.description(),
                                 input.amount(),
                                 input.type(),
+                                input.date(),
+                                input.status(),
                                 category.getId(),
                                 category.getName()
                         ),

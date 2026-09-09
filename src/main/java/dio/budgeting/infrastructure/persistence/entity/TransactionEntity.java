@@ -2,6 +2,7 @@ package dio.budgeting.infrastructure.persistence.entity;
 
 import dio.budgeting.domain.Transaction;
 import dio.budgeting.domain.TransactionId;
+import dio.budgeting.domain.TransactionStatus;
 import dio.budgeting.domain.TransactionType;
 import dio.budgeting.domain.user.User;
 import jakarta.persistence.Entity;
@@ -15,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +34,11 @@ public class TransactionEntity {
 
     @Enumerated(EnumType.STRING)
     private TransactionType type;
+
+    private LocalDate date;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -52,6 +59,8 @@ public class TransactionEntity {
                 transaction.getDescription(),
                 transaction.getAmount(),
                 transaction.getType(),
+                transaction.getDate(),
+                transaction.getStatus(),
                 category,
                 user
         );
@@ -64,11 +73,23 @@ public class TransactionEntity {
                         ? this.type
                         : TransactionType.EXPENSE;
 
+        LocalDate transactionDate =
+                this.date != null
+                        ? this.date
+                        : LocalDate.now();
+
+        TransactionStatus transactionStatus =
+                this.status != null
+                        ? this.status
+                        : TransactionStatus.COMPLETED;
+
         return new Transaction(
                 new TransactionId(this.id),
                 this.description,
                 this.amount,
                 transactionType,
+                transactionDate,
+                transactionStatus,
                 this.category.getId(),
                 this.category.getName()
         );

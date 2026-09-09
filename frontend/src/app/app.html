@@ -47,11 +47,7 @@
           />
         </div>
 
-        <button
-          type="submit"
-          class="primary-button login-button"
-          [disabled]="loginLoading"
-        >
+        <button type="submit" class="primary-button login-button" [disabled]="loginLoading">
           @if (loginLoading) {
             Entrando...
           } @else {
@@ -65,9 +61,7 @@
   <div class="app-shell">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-icon">
-          💰
-        </div>
+        <div class="brand-icon">💰</div>
 
         <div>
           <h1>Smart Budget</h1>
@@ -119,20 +113,13 @@
           <span>{{ currentUser?.email }}</span>
         </div>
 
-        <button
-          type="button"
-          class="logout-button"
-          (click)="logout()"
-        >
-          Sair
-        </button>
+        <button type="button" class="logout-button" (click)="logout()">Sair</button>
 
         <span>Spring Boot + Angular</span>
       </div>
     </aside>
 
     <main class="content">
-
       <!-- ========================= -->
       <!-- DASHBOARD -->
       <!-- ========================= -->
@@ -144,22 +131,14 @@
             <h2>Dashboard financeiro</h2>
           </div>
 
-          <button
-            class="primary-button"
-            (click)="openTransactionModal()"
-          >
-            + Nova transação
-          </button>
+          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
         </header>
 
         <section class="cards">
-
           <!-- RECEITAS -->
 
           <article class="card">
-            <div class="card-icon">
-              📈
-            </div>
+            <div class="card-icon">📈</div>
 
             <div>
               <span>Receitas</span>
@@ -178,9 +157,7 @@
           <!-- DESPESAS -->
 
           <article class="card">
-            <div class="card-icon">
-              📉
-            </div>
+            <div class="card-icon">📉</div>
 
             <div>
               <span>Despesas</span>
@@ -199,9 +176,7 @@
           <!-- SALDO -->
 
           <article class="card">
-            <div class="card-icon">
-              💰
-            </div>
+            <div class="card-icon">💰</div>
 
             <div>
               <span>Saldo</span>
@@ -221,22 +196,17 @@
 
           @for (category of visibleCategories; track category.id) {
             <article class="card">
-              <div class="card-icon">
-                💳
-              </div>
+              <div class="card-icon">💳</div>
 
               <div>
                 <span>{{ category.name }}</span>
 
                 <strong>
                   {{
-                    (categoryTotals[category.id] || 0).toLocaleString(
-                      'pt-BR',
-                      {
-                        style: 'currency',
-                        currency: 'BRL',
-                      }
-                    )
+                    (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
                   }}
                 </strong>
               </div>
@@ -252,12 +222,7 @@
                 <h3>Últimas transações</h3>
               </div>
 
-              <button
-                class="ghost-button"
-                (click)="setSection('transactions')"
-              >
-                Ver todas
-              </button>
+              <button class="ghost-button" (click)="setSection('transactions')">Ver todas</button>
             </div>
 
             <div class="transaction-list">
@@ -277,9 +242,35 @@
                         {{ transaction.description }}
                       </strong>
 
-                      <span class="category-badge">
-                        {{ transaction.category }}
-                      </span>
+                      <div class="transaction-metadata">
+                        <span class="category-badge">
+                          {{ transaction.category }}
+                        </span>
+
+                        <span class="transaction-date">
+                          {{ transaction.date }}
+                        </span>
+
+                        <span
+                          class="status-badge"
+                          [class.completed]="transaction.status === 'COMPLETED'"
+                          [class.pending]="transaction.status === 'PENDING'"
+                        >
+                          @if (transaction.type === 'EXPENSE') {
+                            @if (transaction.status === 'COMPLETED') {
+                              Pago
+                            } @else {
+                              Pendente
+                            }
+                          } @else {
+                            @if (transaction.status === 'COMPLETED') {
+                              Recebido
+                            } @else {
+                              A receber
+                            }
+                          }
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -304,15 +295,11 @@
                 </div>
               } @empty {
                 <div class="empty-state">
-                  <div class="empty-icon">
-                    📄
-                  </div>
+                  <div class="empty-icon">📄</div>
 
                   <h4>Nenhuma transação encontrada</h4>
 
-                  <p>
-                    Suas transações aparecerão aqui.
-                  </p>
+                  <p>Suas transações aparecerão aqui.</p>
                 </div>
               }
             </div>
@@ -320,29 +307,18 @@
 
           <article class="panel assistant-card">
             <div>
-              <p class="eyebrow">
-                Inteligência Artificial
-              </p>
+              <p class="eyebrow">Inteligência Artificial</p>
 
-              <h3>
-                Assistente financeiro
-              </h3>
+              <h3>Assistente financeiro</h3>
 
               <p class="assistant-description">
                 Registre receitas, despesas ou consulte suas movimentações usando linguagem natural.
               </p>
             </div>
 
-            <div class="assistant-example">
-              “Gastei 35 reais na farmácia”
-            </div>
+            <div class="assistant-example">“Gastei 35 reais na farmácia”</div>
 
-            <button
-              class="assistant-button"
-              (click)="openAiModal()"
-            >
-              🤖 Abrir assistente
-            </button>
+            <button class="assistant-button" (click)="openAiModal()">🤖 Abrir assistente</button>
           </article>
         </section>
       }
@@ -354,44 +330,24 @@
       @if (activeSection === 'transactions') {
         <header class="topbar">
           <div>
-            <p class="eyebrow">
-              Movimentações
-            </p>
+            <p class="eyebrow">Movimentações</p>
 
-            <h2>
-              Transações
-            </h2>
+            <h2>Transações</h2>
           </div>
 
-          <button
-            class="primary-button"
-            (click)="openTransactionModal()"
-          >
-            + Nova transação
-          </button>
+          <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
         </header>
 
         <section class="panel transactions-page">
           <div class="transactions-toolbar">
             <div class="search-field">
-              <span>
-                🔎
-              </span>
+              <span> 🔎 </span>
 
-              <input
-                type="text"
-                [(ngModel)]="searchTerm"
-                placeholder="Buscar por descrição..."
-              />
+              <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por descrição..." />
             </div>
 
-            <select
-              class="category-filter"
-              [(ngModel)]="selectedCategory"
-            >
-              <option value="ALL">
-                Todas as categorias
-              </option>
+            <select class="category-filter" [(ngModel)]="selectedCategory">
+              <option value="ALL">Todas as categorias</option>
 
               @for (category of visibleCategories; track category.id) {
                 <option [value]="category.name">
@@ -400,20 +356,14 @@
               }
             </select>
 
-            <button
-              type="button"
-              class="clear-filter-button"
-              (click)="clearFilters()"
-            >
+            <button type="button" class="clear-filter-button" (click)="clearFilters()">
               Limpar filtros
             </button>
           </div>
 
           <div class="transactions-summary">
             <div>
-              <span>
-                Transações encontradas
-              </span>
+              <span> Transações encontradas </span>
 
               <strong>
                 {{ filteredTransactions.length }}
@@ -421,9 +371,7 @@
             </div>
 
             <div>
-              <span>
-                Saldo das transações
-              </span>
+              <span> Saldo das transações </span>
 
               <strong>
                 {{
@@ -453,9 +401,35 @@
                       {{ transaction.description }}
                     </strong>
 
-                    <span class="category-badge">
-                      {{ transaction.category }}
-                    </span>
+                    <div class="transaction-metadata">
+                      <span class="category-badge">
+                        {{ transaction.category }}
+                      </span>
+
+                      <span class="transaction-date">
+                        {{ transaction.date }}
+                      </span>
+
+                      <span
+                        class="status-badge"
+                        [class.completed]="transaction.status === 'COMPLETED'"
+                        [class.pending]="transaction.status === 'PENDING'"
+                      >
+                        @if (transaction.type === 'EXPENSE') {
+                          @if (transaction.status === 'COMPLETED') {
+                            Pago
+                          } @else {
+                            Pendente
+                          }
+                        } @else {
+                          @if (transaction.status === 'COMPLETED') {
+                            Recebido
+                          } @else {
+                            A receber
+                          }
+                        }
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -480,17 +454,11 @@
               </div>
             } @empty {
               <div class="empty-state">
-                <div class="empty-icon">
-                  🔎
-                </div>
+                <div class="empty-icon">🔎</div>
 
-                <h4>
-                  Nenhuma transação encontrada
-                </h4>
+                <h4>Nenhuma transação encontrada</h4>
 
-                <p>
-                  Tente alterar os termos da busca ou os filtros.
-                </p>
+                <p>Tente alterar os termos da busca ou os filtros.</p>
               </div>
             }
           </div>
@@ -504,33 +472,20 @@
       @if (activeSection === 'categories') {
         <header class="topbar">
           <div>
-            <p class="eyebrow">
-              Organização
-            </p>
+            <p class="eyebrow">Organização</p>
 
-            <h2>
-              Categorias
-            </h2>
+            <h2>Categorias</h2>
           </div>
 
-          <button
-            class="primary-button"
-            (click)="openCategoryModal()"
-          >
-            + Nova categoria
-          </button>
+          <button class="primary-button" (click)="openCategoryModal()">+ Nova categoria</button>
         </header>
 
         <section class="panel">
           <div class="panel-header">
             <div>
-              <p class="eyebrow">
-                Gerenciamento
-              </p>
+              <p class="eyebrow">Gerenciamento</p>
 
-              <h3>
-                Suas categorias
-              </h3>
+              <h3>Suas categorias</h3>
             </div>
           </div>
 
@@ -544,9 +499,7 @@
             @for (category of visibleCategories; track category.id) {
               <div class="transaction-item">
                 <div class="transaction-info">
-                  <div class="transaction-icon">
-                    💳
-                  </div>
+                  <div class="transaction-icon">💳</div>
 
                   <div>
                     <strong>
@@ -555,13 +508,10 @@
 
                     <span class="category-badge">
                       {{
-                        (categoryTotals[category.id] || 0).toLocaleString(
-                          'pt-BR',
-                          {
-                            style: 'currency',
-                            currency: 'BRL',
-                          }
-                        )
+                        (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })
                       }}
                     </span>
                   </div>
@@ -580,17 +530,11 @@
               </div>
             } @empty {
               <div class="empty-state">
-                <div class="empty-icon">
-                  📁
-                </div>
+                <div class="empty-icon">📁</div>
 
-                <h4>
-                  Nenhuma categoria encontrada
-                </h4>
+                <h4>Nenhuma categoria encontrada</h4>
 
-                <p>
-                  Crie uma categoria para organizar suas transações.
-                </p>
+                <p>Crie uma categoria para organizar suas transações.</p>
               </div>
             }
           </div>
@@ -608,32 +552,19 @@
       <div class="modal">
         <div class="modal-header">
           <div>
-            <p class="eyebrow">
-              Cadastro
-            </p>
+            <p class="eyebrow">Cadastro</p>
 
-            <h3>
-              Nova transação
-            </h3>
+            <h3>Nova transação</h3>
           </div>
 
-          <button
-            type="button"
-            class="close-button"
-            (click)="closeTransactionModal()"
-          >
-            ×
-          </button>
+          <button type="button" class="close-button" (click)="closeTransactionModal()">×</button>
         </div>
 
         <form (ngSubmit)="createTransaction()">
-
           <!-- TIPO -->
 
           <div class="form-group">
-            <label for="transactionType">
-              Tipo
-            </label>
+            <label for="transactionType"> Tipo </label>
 
             <select
               id="transactionType"
@@ -641,22 +572,16 @@
               [(ngModel)]="newTransaction.type"
               required
             >
-              <option value="EXPENSE">
-                Despesa
-              </option>
+              <option value="EXPENSE">Despesa</option>
 
-              <option value="INCOME">
-                Receita
-              </option>
+              <option value="INCOME">Receita</option>
             </select>
           </div>
 
           <!-- DESCRIÇÃO -->
 
           <div class="form-group">
-            <label for="description">
-              Descrição
-            </label>
+            <label for="description"> Descrição </label>
 
             <input
               id="description"
@@ -671,9 +596,7 @@
           <!-- VALOR -->
 
           <div class="form-group">
-            <label for="amount">
-              Valor
-            </label>
+            <label for="amount"> Valor </label>
 
             <input
               id="amount"
@@ -690,16 +613,9 @@
           <!-- CATEGORIA -->
 
           <div class="form-group">
-            <label for="category">
-              Categoria
-            </label>
+            <label for="category"> Categoria </label>
 
-            <select
-              id="category"
-              name="category"
-              [(ngModel)]="newTransaction.categoryId"
-              required
-            >
+            <select id="category" name="category" [(ngModel)]="newTransaction.categoryId" required>
               @for (category of selectableCategories; track category.id) {
                 <option [value]="category.id">
                   {{ category.name }}
@@ -708,21 +624,60 @@
             </select>
           </div>
 
+          <!-- DATA -->
+
+          <div class="form-group">
+            <label for="transactionDate"> Data </label>
+
+            <input
+              id="transactionDate"
+              type="date"
+              name="transactionDate"
+              [(ngModel)]="newTransaction.date"
+              required
+            />
+          </div>
+
+          <!-- STATUS -->
+
+          <div class="form-group">
+            <label class="status-checkbox">
+              <input
+                type="checkbox"
+                name="transactionCompleted"
+                [(ngModel)]="transactionCompleted"
+              />
+
+              @if (newTransaction.type === 'EXPENSE') {
+                Pago
+              } @else {
+                Recebido
+              }
+            </label>
+
+            <span class="status-help">
+              @if (transactionCompleted) {
+                @if (newTransaction.type === 'EXPENSE') {
+                  Esta despesa já foi paga.
+                } @else {
+                  Esta receita já foi recebida.
+                }
+              } @else {
+                @if (newTransaction.type === 'EXPENSE') {
+                  Esta despesa está pendente de pagamento.
+                } @else {
+                  Esta receita ainda está pendente de recebimento.
+                }
+              }
+            </span>
+          </div>
+
           <div class="modal-actions">
-            <button
-              type="button"
-              class="cancel-button"
-              (click)="closeTransactionModal()"
-            >
+            <button type="button" class="cancel-button" (click)="closeTransactionModal()">
               Cancelar
             </button>
 
-            <button
-              type="submit"
-              class="primary-button"
-            >
-              Cadastrar
-            </button>
+            <button type="submit" class="primary-button">Cadastrar</button>
           </div>
         </form>
       </div>
@@ -738,22 +693,12 @@
       <div class="modal">
         <div class="modal-header">
           <div>
-            <p class="eyebrow">
-              Cadastro
-            </p>
+            <p class="eyebrow">Cadastro</p>
 
-            <h3>
-              Nova categoria
-            </h3>
+            <h3>Nova categoria</h3>
           </div>
 
-          <button
-            type="button"
-            class="close-button"
-            (click)="closeCategoryModal()"
-          >
-            ×
-          </button>
+          <button type="button" class="close-button" (click)="closeCategoryModal()">×</button>
         </div>
 
         @if (categoryError) {
@@ -764,9 +709,7 @@
 
         <form (ngSubmit)="createCategory()">
           <div class="form-group">
-            <label for="categoryName">
-              Nome da categoria
-            </label>
+            <label for="categoryName"> Nome da categoria </label>
 
             <input
               id="categoryName"
@@ -789,11 +732,7 @@
               Cancelar
             </button>
 
-            <button
-              type="submit"
-              class="primary-button"
-              [disabled]="categoryLoading"
-            >
+            <button type="submit" class="primary-button" [disabled]="categoryLoading">
               @if (categoryLoading) {
                 Cadastrando...
               } @else {
@@ -815,39 +754,26 @@
       <div class="modal ai-modal">
         <div class="modal-header">
           <div>
-            <p class="eyebrow">
-              Inteligência Artificial
-            </p>
+            <p class="eyebrow">Inteligência Artificial</p>
 
-            <h3>
-              Assistente financeiro
-            </h3>
+            <h3>Assistente financeiro</h3>
           </div>
 
-          <button
-            type="button"
-            class="close-button"
-            (click)="closeAiModal()"
-          >
-            ×
-          </button>
+          <button type="button" class="close-button" (click)="closeAiModal()">×</button>
         </div>
 
         <div class="ai-introduction">
-          <div class="ai-avatar">
-            🤖
-          </div>
+          <div class="ai-avatar">🤖</div>
 
           <p>
-            Você pode registrar receitas, despesas ou consultar suas movimentações usando linguagem natural.
+            Você pode registrar receitas, despesas ou consultar suas movimentações usando linguagem
+            natural.
           </p>
         </div>
 
         @if (aiResponse) {
           <div class="ai-response">
-            <strong>
-              Assistente
-            </strong>
+            <strong> Assistente </strong>
 
             <p>
               {{ aiResponse }}
@@ -857,9 +783,7 @@
 
         <form (ngSubmit)="sendAiMessage()">
           <div class="form-group">
-            <label for="aiMessage">
-              O que você deseja fazer?
-            </label>
+            <label for="aiMessage"> O que você deseja fazer? </label>
 
             <textarea
               id="aiMessage"
@@ -888,17 +812,11 @@
               </button>
 
               @if (isRecording) {
-                <span class="recording-label">
-                  🔴 Gravando...
-                </span>
+                <span class="recording-label"> 🔴 Gravando... </span>
               }
             </div>
 
-            <button
-              type="submit"
-              class="primary-button"
-              [disabled]="aiLoading || isRecording"
-            >
+            <button type="submit" class="primary-button" [disabled]="aiLoading || isRecording">
               @if (aiLoading) {
                 Processando...
               } @else {
