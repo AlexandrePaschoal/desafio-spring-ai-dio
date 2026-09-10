@@ -6,55 +6,163 @@
         <p>Assistente financeiro</p>
       </div>
 
-      <div class="login-header">
-        <p class="eyebrow">Acesso</p>
-        <h2>Entrar na sua conta</h2>
-        <p>Use seu e-mail e senha para acessar o dashboard.</p>
-      </div>
+      @if (!isRegisterMode) {
+        <!-- ========================= -->
+        <!-- LOGIN -->
+        <!-- ========================= -->
 
-      @if (loginError) {
-        <div class="login-error">
-          {{ loginError }}
+        <div class="login-header">
+          <p class="eyebrow">Acesso</p>
+          <h2>Entrar na sua conta</h2>
+          <p>Use seu e-mail e senha para acessar o dashboard.</p>
+        </div>
+
+        @if (loginError) {
+          <div class="login-error">
+            {{ loginError }}
+          </div>
+        }
+
+        <form (ngSubmit)="login()">
+          <div class="form-group">
+            <label for="loginEmail">E-mail</label>
+
+            <input
+              id="loginEmail"
+              type="email"
+              name="loginEmail"
+              [(ngModel)]="loginData.email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Senha</label>
+
+            <input
+              id="loginPassword"
+              type="password"
+              name="loginPassword"
+              [(ngModel)]="loginData.password"
+              placeholder="Sua senha"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="primary-button login-button" [disabled]="loginLoading">
+            @if (loginLoading) {
+              Entrando...
+            } @else {
+              Entrar
+            }
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          <span>Não tem uma conta?</span>
+
+          <button type="button" class="auth-switch-button" (click)="showRegister()">
+            Cadastre-se
+          </button>
+        </div>
+      } @else {
+        <!-- ========================= -->
+        <!-- CADASTRO -->
+        <!-- ========================= -->
+
+        <div class="login-header">
+          <p class="eyebrow">Cadastro</p>
+          <h2>Crie sua conta</h2>
+          <p>Preencha seus dados para começar a usar o Smart Budget.</p>
+        </div>
+
+        @if (registerError) {
+          <div class="login-error">
+            {{ registerError }}
+          </div>
+        }
+
+        @if (registerSuccess) {
+          <div class="register-success">
+            {{ registerSuccess }}
+          </div>
+        }
+
+        <form (ngSubmit)="register()">
+          <div class="form-group">
+            <label for="registerName">Nome</label>
+
+            <input
+              id="registerName"
+              type="text"
+              name="registerName"
+              [(ngModel)]="registerData.name"
+              placeholder="Seu nome"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="registerEmail">E-mail</label>
+
+            <input
+              id="registerEmail"
+              type="email"
+              name="registerEmail"
+              [(ngModel)]="registerData.email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="registerPassword">Senha</label>
+
+            <input
+              id="registerPassword"
+              type="password"
+              name="registerPassword"
+              [(ngModel)]="registerData.password"
+              placeholder="Crie uma senha"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="registerConfirmPassword"> Confirmar senha </label>
+
+            <input
+              id="registerConfirmPassword"
+              type="password"
+              name="registerConfirmPassword"
+              [(ngModel)]="registerData.confirmPassword"
+              placeholder="Digite a senha novamente"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="primary-button login-button" [disabled]="registerLoading">
+            @if (registerLoading) {
+              Criando conta...
+            } @else {
+              Criar conta
+            }
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          <span>Já possui uma conta?</span>
+
+          <button type="button" class="auth-switch-button" (click)="showLogin()">Entrar</button>
         </div>
       }
-
-      <form (ngSubmit)="login()">
-        <div class="form-group">
-          <label for="loginEmail">E-mail</label>
-
-          <input
-            id="loginEmail"
-            type="email"
-            name="loginEmail"
-            [(ngModel)]="loginData.email"
-            placeholder="seuemail@exemplo.com"
-            autocomplete="email"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="loginPassword">Senha</label>
-
-          <input
-            id="loginPassword"
-            type="password"
-            name="loginPassword"
-            [(ngModel)]="loginData.password"
-            placeholder="Sua senha"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-
-        <button type="submit" class="primary-button login-button" [disabled]="loginLoading">
-          @if (loginLoading) {
-            Entrando...
-          } @else {
-            Entrar
-          }
-        </button>
-      </form>
     </section>
   </main>
 } @else {
@@ -245,7 +353,7 @@
             </div>
 
             <div class="transaction-list">
-              @for (transaction of recentTransactions; track transaction.id){
+              @for (transaction of recentTransactions; track transaction.id) {
                 <div class="transaction-item">
                   <div class="transaction-info">
                     <div class="transaction-icon">

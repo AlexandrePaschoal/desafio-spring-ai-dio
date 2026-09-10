@@ -11,6 +11,12 @@ interface LoginResponse {
   };
 }
 
+interface RegisterResponse {
+  id: string;
+  name: string;
+  email: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,6 +38,14 @@ export class AuthService {
           sessionStorage.setItem('user', JSON.stringify(response.user));
         }),
       );
+  }
+
+  register(name: string, email: string, password: string): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, {
+      name,
+      email,
+      password,
+    });
   }
 
   logout(): void {

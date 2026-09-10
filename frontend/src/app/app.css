@@ -1200,6 +1200,59 @@
 }
 
 /* =========================
+   LOGIN / CADASTRO
+   ========================= */
+
+.auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  margin-top: 22px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.auth-switch-button {
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: #4f46e5;
+
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.auth-switch-button:hover {
+  text-decoration: underline;
+}
+
+.register-success {
+  margin-bottom: 20px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+
+  background: #f0fdf4;
+
+  color: #166534;
+
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* =========================
    USUÁRIO / LOGOUT
    ========================= */
 

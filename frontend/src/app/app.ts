@@ -27,6 +27,10 @@ export class App implements OnInit {
     email: string;
   } | null = null;
 
+  // =========================
+  // LOGIN
+  // =========================
+
   loginData = {
     email: '',
     password: '',
@@ -34,6 +38,23 @@ export class App implements OnInit {
 
   loginLoading = false;
   loginError = '';
+
+  // =========================
+  // CADASTRO
+  // =========================
+
+  isRegisterMode = false;
+
+  registerData = {
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  };
+
+  registerLoading = false;
+  registerError = '';
+  registerSuccess = '';
 
   // =========================
   // NAVEGAÇÃO
@@ -158,6 +179,85 @@ export class App implements OnInit {
   // AUTENTICAÇÃO
   // =========================
 
+  showRegister(): void {
+    this.isRegisterMode = true;
+
+    this.loginError = '';
+    this.registerError = '';
+    this.registerSuccess = '';
+  }
+
+  showLogin(): void {
+    this.isRegisterMode = false;
+
+    this.loginError = '';
+    this.registerError = '';
+
+    this.registerData = {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    };
+  }
+
+  register(): void {
+    const name = this.registerData.name.trim();
+    const email = this.registerData.email.trim();
+    const password = this.registerData.password;
+    const confirmPassword = this.registerData.confirmPassword;
+
+    this.registerError = '';
+    this.registerSuccess = '';
+
+    if (!name || !email || !password || !confirmPassword) {
+      this.registerError = 'Preencha todos os campos.';
+
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      this.registerError = 'As senhas não coincidem.';
+
+      return;
+    }
+
+    if (password.length < 6) {
+      this.registerError = 'A senha deve possuir pelo menos 6 caracteres.';
+
+      return;
+    }
+
+    this.registerLoading = true;
+
+    this.authService.register(name, email, password).subscribe({
+      next: () => {
+        this.registerLoading = false;
+
+        this.registerSuccess = 'Conta criada com sucesso. Agora você pode entrar.';
+
+        this.registerData = {
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        };
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao cadastrar usuário:', error);
+
+        this.registerError = error.error?.message || 'Não foi possível criar sua conta.';
+
+        this.registerLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   login(): void {
     const email = this.loginData.email.trim();
 
@@ -177,6 +277,8 @@ export class App implements OnInit {
         this.isAuthenticated = true;
 
         this.currentUser = response.user;
+
+        this.isRegisterMode = false;
 
         this.loginData = {
           email: '',
@@ -213,6 +315,26 @@ export class App implements OnInit {
 
     this.isAuthenticated = false;
     this.currentUser = null;
+
+    this.isRegisterMode = false;
+
+    this.loginData = {
+      email: '',
+      password: '',
+    };
+
+    this.registerData = {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    };
+
+    this.loginError = '';
+    this.registerError = '';
+    this.registerSuccess = '';
+    this.loginLoading = false;
+    this.registerLoading = false;
 
     this.activeSection = 'dashboard';
 
