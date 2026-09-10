@@ -109,6 +109,8 @@ export class App implements OnInit {
   categoryLoading = false;
   categoryError = '';
 
+  selectedCategoryView: Category | null = null;
+
   // =========================
   // ASSISTENTE IA
   // =========================
@@ -505,6 +507,36 @@ export class App implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  openCategoryView(category: Category): void {
+    this.selectedCategoryView = category;
+  }
+
+  closeCategoryView(): void {
+    this.selectedCategoryView = null;
+  }
+
+  getTransactionsByCategory(categoryName: string): Transaction[] {
+    return this.transactions
+      .filter((transaction) => transaction.category === categoryName)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  getCategoryTransactionCount(categoryName: string): number {
+    return this.getTransactionsByCategory(categoryName).length;
+  }
+
+  getCategoryIncome(categoryName: string): number {
+    return this.getTransactionsByCategory(categoryName)
+      .filter((transaction) => transaction.type === 'INCOME')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  getCategoryExpenses(categoryName: string): number {
+    return this.getTransactionsByCategory(categoryName)
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
   // =========================

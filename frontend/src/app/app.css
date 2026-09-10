@@ -1343,3 +1343,157 @@
     font-size: 24px;
   }
 }
+
+/* =========================
+   CATEGORIAS EM CARDS
+   ========================= */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.category-card {
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.category-card-main {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 22px;
+
+  border: none;
+
+  background: transparent;
+
+  color: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.category-card-main:hover {
+  background: #f8fafc;
+}
+
+.category-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  background: #f1f5f9;
+
+  font-size: 20px;
+}
+
+.category-card-content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  min-width: 0;
+}
+
+.category-card-content h3 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 17px;
+}
+
+.category-card-content strong {
+  color: #111827;
+
+  font-size: 21px;
+}
+
+.category-card-content > span {
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.category-card-link {
+  margin-top: 6px;
+
+  color: #4f46e5 !important;
+
+  font-weight: 700;
+}
+
+.category-delete-button {
+  width: 100%;
+
+  padding: 11px 16px;
+
+  border: none;
+  border-top: 1px solid #e5e7eb;
+
+  background: #ffffff;
+
+  color: #b91c1c;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.category-delete-button:hover {
+  background: #fef2f2;
+}
+
+.category-delete-button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+.category-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+@media (max-width: 900px) {
+  .category-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card-main {
+    padding: 18px;
+  }
+}

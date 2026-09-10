@@ -318,27 +318,6 @@
               </strong>
             </div>
           </article>
-
-          <!-- VALORES POR CATEGORIA -->
-
-          @for (category of visibleCategories; track category.id) {
-            <article class="card">
-              <div class="card-icon">💳</div>
-
-              <div>
-                <span>{{ category.name }}</span>
-
-                <strong>
-                  {{
-                    (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
-                  }}
-                </strong>
-              </div>
-            </article>
-          }
         </section>
 
         <section class="dashboard-grid">
@@ -637,24 +616,15 @@
       <!-- ========================= -->
 
       @if (activeSection === 'categories') {
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Organização</p>
-
-            <h2>Categorias</h2>
-          </div>
-
-          <button class="primary-button" (click)="openCategoryModal()">+ Nova categoria</button>
-        </header>
-
-        <section class="panel">
-          <div class="panel-header">
+        @if (!selectedCategoryView) {
+          <header class="topbar">
             <div>
-              <p class="eyebrow">Gerenciamento</p>
-
-              <h3>Suas categorias</h3>
+              <p class="eyebrow">Organização</p>
+              <h2>Categorias</h2>
             </div>
-          </div>
+
+            <button class="primary-button" (click)="openCategoryModal()">+ Nova categoria</button>
+          </header>
 
           @if (categoryError) {
             <div class="login-error">
@@ -662,39 +632,52 @@
             </div>
           }
 
-          <div class="transaction-list">
+          <section class="category-grid">
             @for (category of visibleCategories; track category.id) {
-              <div class="transaction-item">
-                <div class="transaction-info">
-                  <div class="transaction-icon">💳</div>
+              <article class="category-card">
+                <button
+                  type="button"
+                  class="category-card-main"
+                  (click)="openCategoryView(category)"
+                >
+                  <div class="category-card-icon">💳</div>
 
-                  <div>
+                  <div class="category-card-content">
+                    <h3>{{ category.name }}</h3>
+
                     <strong>
-                      {{ category.name }}
-                    </strong>
-
-                    <span class="category-badge">
                       {{
                         (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
                           style: 'currency',
                           currency: 'BRL',
                         })
                       }}
+                    </strong>
+
+                    <span>
+                      {{ getCategoryTransactionCount(category.name) }}
+                      {{
+                        getCategoryTransactionCount(category.name) === 1
+                          ? 'transação'
+                          : 'transações'
+                      }}
                     </span>
+
+                    <span class="category-card-link"> Ver transações → </span>
                   </div>
-                </div>
+                </button>
 
                 @if (category.name.toLowerCase() !== 'sem categoria') {
                   <button
                     type="button"
-                    class="clear-filter-button"
+                    class="category-delete-button"
                     [disabled]="categoryLoading"
                     (click)="deleteCategory(category)"
                   >
-                    Excluir
+                    Excluir categoria
                   </button>
                 }
-              </div>
+              </article>
             } @empty {
               <div class="empty-state">
                 <div class="empty-icon">📁</div>
@@ -704,8 +687,180 @@
                 <p>Crie uma categoria para organizar suas transações.</p>
               </div>
             }
-          </div>
-        </section>
+          </section>
+        } @else {
+          <header class="topbar">
+            <div>
+              <button type="button" class="ghost-button" (click)="closeCategoryView()">
+                ← Voltar para categorias
+              </button>
+
+              <p class="eyebrow">Categoria</p>
+
+              <h2>{{ selectedCategoryView.name }}</h2>
+            </div>
+
+            <button class="primary-button" (click)="openTransactionModal()">
+              + Nova transação
+            </button>
+          </header>
+
+          <section class="category-summary">
+            <article class="card">
+              <div class="card-icon">📈</div>
+
+              <div>
+                <span>Receitas</span>
+
+                <strong>
+                  {{
+                    getCategoryIncome(selectedCategoryView.name).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
+                  }}
+                </strong>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-icon">📉</div>
+
+              <div>
+                <span>Despesas</span>
+
+                <strong>
+                  {{
+                    getCategoryExpenses(selectedCategoryView.name).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })
+                  }}
+                </strong>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-icon">💳</div>
+
+              <div>
+                <span>Transações</span>
+
+                <strong>
+                  {{ getCategoryTransactionCount(selectedCategoryView.name) }}
+                </strong>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel transactions-page">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Movimentações</p>
+
+                <h3>Transações de {{ selectedCategoryView.name }}</h3>
+              </div>
+            </div>
+
+            <div class="transaction-list">
+              @for (
+                transaction of getTransactionsByCategory(selectedCategoryView.name);
+                track transaction.id
+              ) {
+                <div class="transaction-item">
+                  <div class="transaction-info">
+                    <div class="transaction-icon">
+                      @if (transaction.type === 'INCOME') {
+                        📈
+                      } @else {
+                        💳
+                      }
+                    </div>
+
+                    <div>
+                      <strong>
+                        {{ transaction.description }}
+                      </strong>
+
+                      <div class="transaction-metadata">
+                        <span class="transaction-date">
+                          {{ transaction.date }}
+                        </span>
+
+                        <span
+                          class="status-badge"
+                          [class.completed]="transaction.status === 'COMPLETED'"
+                          [class.pending]="transaction.status === 'PENDING'"
+                        >
+                          @if (transaction.type === 'EXPENSE') {
+                            @if (transaction.status === 'COMPLETED') {
+                              Pago
+                            } @else {
+                              Pendente
+                            }
+                          } @else {
+                            @if (transaction.status === 'COMPLETED') {
+                              Recebido
+                            } @else {
+                              A receber
+                            }
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="transaction-item-actions">
+                    <strong
+                      class="transaction-amount"
+                      [class.income]="transaction.type === 'INCOME'"
+                      [class.expense]="transaction.type === 'EXPENSE'"
+                    >
+                      @if (transaction.type === 'INCOME') {
+                        +
+                      } @else {
+                        -
+                      }
+
+                      {{
+                        transaction.amount.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })
+                      }}
+                    </strong>
+
+                    <div class="transaction-buttons">
+                      <button
+                        type="button"
+                        class="ghost-button"
+                        (click)="openEditTransaction(transaction)"
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        type="button"
+                        class="clear-filter-button"
+                        (click)="deleteTransaction(transaction)"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-state">
+                  <div class="empty-icon">📄</div>
+
+                  <h4>Nenhuma transação nesta categoria</h4>
+
+                  <p>As transações dessa categoria aparecerão aqui.</p>
+                </div>
+              }
+            </div>
+          </section>
+        }
       }
     </main>
   </div>
