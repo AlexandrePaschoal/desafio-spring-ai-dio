@@ -245,7 +245,7 @@
             </div>
 
             <div class="transaction-list">
-              @for (transaction of transactions; track transaction.id) {
+              @for (transaction of recentTransactions; track transaction.id){
                 <div class="transaction-item">
                   <div class="transaction-info">
                     <div class="transaction-icon">

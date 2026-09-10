@@ -473,14 +473,38 @@ export class App implements OnInit {
   get filteredTransactions(): Transaction[] {
     const search = this.searchTerm.trim().toLowerCase();
 
-    return this.transactions.filter((transaction) => {
-      const matchesSearch = !search || transaction.description.toLowerCase().includes(search);
+    return this.transactions
+      .filter((transaction) => {
+        const matchesSearch = !search || transaction.description.toLowerCase().includes(search);
 
-      const matchesCategory =
-        this.selectedCategory === 'ALL' || transaction.category === this.selectedCategory;
+        const matchesCategory =
+          this.selectedCategory === 'ALL' || transaction.category === this.selectedCategory;
 
-      return matchesSearch && matchesCategory;
-    });
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        const dateComparison = b.date.localeCompare(a.date);
+
+        if (dateComparison !== 0) {
+          return dateComparison;
+        }
+
+        return a.description.localeCompare(b.description, 'pt-BR');
+      });
+  }
+
+  get recentTransactions(): Transaction[] {
+    return [...this.transactions]
+      .sort((a, b) => {
+        const dateComparison = b.date.localeCompare(a.date);
+
+        if (dateComparison !== 0) {
+          return dateComparison;
+        }
+
+        return a.description.localeCompare(b.description, 'pt-BR');
+      })
+      .slice(0, 5);
   }
 
   get filteredTotal(): number {
