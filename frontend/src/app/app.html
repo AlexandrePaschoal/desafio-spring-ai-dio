@@ -135,17 +135,17 @@
         </header>
 
         <section class="cards">
-          <!-- RECEITAS -->
+          <!-- RECEITAS RECEBIDAS -->
 
           <article class="card">
             <div class="card-icon">📈</div>
 
             <div>
-              <span>Receitas</span>
+              <span>Receitas recebidas</span>
 
               <strong>
                 {{
-                  totalIncome.toLocaleString('pt-BR', {
+                  receivedIncome.toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })
@@ -154,17 +154,17 @@
             </div>
           </article>
 
-          <!-- DESPESAS -->
+          <!-- DESPESAS PAGAS -->
 
           <article class="card">
             <div class="card-icon">📉</div>
 
             <div>
-              <span>Despesas</span>
+              <span>Despesas pagas</span>
 
               <strong>
                 {{
-                  totalExpenses.toLocaleString('pt-BR', {
+                  paidExpenses.toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })
@@ -173,17 +173,17 @@
             </div>
           </article>
 
-          <!-- SALDO -->
+          <!-- SALDO ATUAL -->
 
           <article class="card">
             <div class="card-icon">💰</div>
 
             <div>
-              <span>Saldo</span>
+              <span>Saldo atual</span>
 
               <strong>
                 {{
-                  balance.toLocaleString('pt-BR', {
+                  currentBalance.toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })
@@ -192,7 +192,26 @@
             </div>
           </article>
 
-          <!-- GASTOS POR CATEGORIA -->
+          <!-- SALDO PROJETADO -->
+
+          <article class="card">
+            <div class="card-icon">🔮</div>
+
+            <div>
+              <span>Saldo projetado</span>
+
+              <strong>
+                {{
+                  projectedBalance.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }}
+              </strong>
+            </div>
+          </article>
+
+          <!-- VALORES POR CATEGORIA -->
 
           @for (category of visibleCategories; track category.id) {
             <article class="card">
@@ -274,24 +293,44 @@
                     </div>
                   </div>
 
-                  <strong
-                    class="transaction-amount"
-                    [class.income]="transaction.type === 'INCOME'"
-                    [class.expense]="transaction.type === 'EXPENSE'"
-                  >
-                    @if (transaction.type === 'INCOME') {
-                      +
-                    } @else {
-                      -
-                    }
+                  <div class="transaction-item-actions">
+                    <strong
+                      class="transaction-amount"
+                      [class.income]="transaction.type === 'INCOME'"
+                      [class.expense]="transaction.type === 'EXPENSE'"
+                    >
+                      @if (transaction.type === 'INCOME') {
+                        +
+                      } @else {
+                        -
+                      }
 
-                    {{
-                      transaction.amount.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
-                      })
-                    }}
-                  </strong>
+                      {{
+                        transaction.amount.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })
+                      }}
+                    </strong>
+
+                    <div class="transaction-buttons">
+                      <button
+                        type="button"
+                        class="ghost-button"
+                        (click)="openEditTransaction(transaction)"
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        type="button"
+                        class="clear-filter-button"
+                        (click)="deleteTransaction(transaction)"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
                 </div>
               } @empty {
                 <div class="empty-state">
@@ -433,24 +472,44 @@
                   </div>
                 </div>
 
-                <strong
-                  class="transaction-amount"
-                  [class.income]="transaction.type === 'INCOME'"
-                  [class.expense]="transaction.type === 'EXPENSE'"
-                >
-                  @if (transaction.type === 'INCOME') {
-                    +
-                  } @else {
-                    -
-                  }
+                <div class="transaction-item-actions">
+                  <strong
+                    class="transaction-amount"
+                    [class.income]="transaction.type === 'INCOME'"
+                    [class.expense]="transaction.type === 'EXPENSE'"
+                  >
+                    @if (transaction.type === 'INCOME') {
+                      +
+                    } @else {
+                      -
+                    }
 
-                  {{
-                    transaction.amount.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
-                  }}
-                </strong>
+                    {{
+                      transaction.amount.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+
+                  <div class="transaction-buttons">
+                    <button
+                      type="button"
+                      class="ghost-button"
+                      (click)="openEditTransaction(transaction)"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      class="clear-filter-button"
+                      (click)="deleteTransaction(transaction)"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </div>
               </div>
             } @empty {
               <div class="empty-state">
@@ -552,13 +611,23 @@
       <div class="modal">
         <div class="modal-header">
           <div>
-            <p class="eyebrow">Cadastro</p>
+            <p class="eyebrow">
+              {{ isEditingTransaction ? 'Edição' : 'Cadastro' }}
+            </p>
 
-            <h3>Nova transação</h3>
+            <h3>
+              {{ isEditingTransaction ? 'Editar transação' : 'Nova transação' }}
+            </h3>
           </div>
 
           <button type="button" class="close-button" (click)="closeTransactionModal()">×</button>
         </div>
+
+        @if (transactionError) {
+          <div class="login-error">
+            {{ transactionError }}
+          </div>
+        }
 
         <form (ngSubmit)="createTransaction()">
           <!-- TIPO -->
@@ -616,10 +685,15 @@
             <label for="category"> Categoria </label>
 
             <select id="category" name="category" [(ngModel)]="newTransaction.categoryId" required>
-              @for (category of selectableCategories; track category.id) {
-                <option [value]="category.id">
-                  {{ category.name }}
-                </option>
+              @for (category of categories; track category.id) {
+                @if (
+                  category.name.toLowerCase() !== 'sem categoria' ||
+                  (isEditingTransaction && category.id === newTransaction.categoryId)
+                ) {
+                  <option [value]="category.id">
+                    {{ category.name }}
+                  </option>
+                }
               }
             </select>
           </div>
@@ -673,11 +747,24 @@
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="cancel-button" (click)="closeTransactionModal()">
+            <button
+              type="button"
+              class="cancel-button"
+              (click)="closeTransactionModal()"
+              [disabled]="transactionLoading"
+            >
               Cancelar
             </button>
 
-            <button type="submit" class="primary-button">Cadastrar</button>
+            <button type="submit" class="primary-button" [disabled]="transactionLoading">
+              @if (transactionLoading) {
+                Salvando...
+              } @else if (isEditingTransaction) {
+                Salvar alterações
+              } @else {
+                Cadastrar
+              }
+            </button>
           </div>
         </form>
       </div>

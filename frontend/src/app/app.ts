@@ -58,10 +58,15 @@ export class App implements OnInit {
   selectedCategory = 'ALL';
 
   // =========================
-  // NOVA TRANSAÇÃO
+  // TRANSAÇÃO
   // =========================
 
   showTransactionModal = false;
+
+  editingTransactionId: string | null = null;
+
+  transactionLoading = false;
+  transactionError = '';
 
   newTransaction = {
     description: '',
@@ -145,6 +150,10 @@ export class App implements OnInit {
     this.newTransaction.status = completed ? 'COMPLETED' : 'PENDING';
   }
 
+  get isEditingTransaction(): boolean {
+    return this.editingTransactionId !== null;
+  }
+
   // =========================
   // AUTENTICAÇÃO
   // =========================
@@ -216,6 +225,9 @@ export class App implements OnInit {
     this.selectedCategory = 'ALL';
 
     this.showTransactionModal = false;
+    this.editingTransactionId = null;
+    this.transactionLoading = false;
+    this.transactionError = '';
 
     this.showCategoryModal = false;
     this.newCategoryName = '';
@@ -412,20 +424,46 @@ export class App implements OnInit {
   // RESUMO FINANCEIRO
   // =========================
 
+  // RECEITAS TOTAIS
   get totalIncome(): number {
     return this.transactions
       .filter((transaction) => transaction.type === 'INCOME')
       .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
+  // DESPESAS TOTAIS
   get totalExpenses(): number {
     return this.transactions
       .filter((transaction) => transaction.type === 'EXPENSE')
       .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
-  get balance(): number {
+  // RECEITAS JÁ RECEBIDAS
+  get receivedIncome(): number {
+    return this.transactions
+      .filter((transaction) => transaction.type === 'INCOME' && transaction.status === 'COMPLETED')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  // DESPESAS JÁ PAGAS
+  get paidExpenses(): number {
+    return this.transactions
+      .filter((transaction) => transaction.type === 'EXPENSE' && transaction.status === 'COMPLETED')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  // SALDO ATUAL
+  get currentBalance(): number {
+    return this.receivedIncome - this.paidExpenses;
+  }
+
+  // SALDO PROJETADO
+  get projectedBalance(): number {
     return this.totalIncome - this.totalExpenses;
+  }
+
+  get balance(): number {
+    return this.currentBalance;
   }
 
   // =========================
@@ -465,19 +503,64 @@ export class App implements OnInit {
   // =========================
 
   openTransactionModal(): void {
-    if (!this.newTransaction.categoryId && this.selectableCategories.length > 0) {
-      this.newTransaction.categoryId = this.selectableCategories[0].id;
-    }
+    this.editingTransactionId = null;
+    this.transactionError = '';
 
-    if (!this.newTransaction.date) {
-      this.newTransaction.date = this.getTodayDate();
-    }
+    this.newTransaction = {
+      description: '',
+      amount: 0,
+
+      categoryId: this.selectableCategories.length > 0 ? this.selectableCategories[0].id : '',
+
+      type: 'EXPENSE',
+
+      date: this.getTodayDate(),
+
+      status: 'COMPLETED',
+    };
 
     this.showTransactionModal = true;
   }
 
+  // =========================
+  // EDITAR TRANSAÇÃO
+  // =========================
+
+  openEditTransaction(transaction: Transaction): void {
+    const category = this.categories.find(
+      (item) => item.name.toLowerCase() === transaction.category.toLowerCase(),
+    );
+
+    if (!category) {
+      this.transactionError = 'A categoria da transação não foi encontrada.';
+
+      return;
+    }
+
+    this.editingTransactionId = transaction.id;
+
+    this.transactionError = '';
+
+    this.newTransaction = {
+      description: transaction.description,
+      amount: transaction.amount,
+      categoryId: category.id,
+      type: transaction.type,
+      date: transaction.date,
+      status: transaction.status,
+    };
+
+    this.showTransactionModal = true;
+
+    this.cdr.detectChanges();
+  }
+
   closeTransactionModal(): void {
     this.showTransactionModal = false;
+
+    this.editingTransactionId = null;
+    this.transactionLoading = false;
+    this.transactionError = '';
 
     this.newTransaction = {
       description: '',
@@ -493,6 +576,10 @@ export class App implements OnInit {
     };
   }
 
+  // =========================
+  // SALVAR TRANSAÇÃO
+  // =========================
+
   createTransaction(): void {
     if (
       !this.newTransaction.description.trim() ||
@@ -500,6 +587,8 @@ export class App implements OnInit {
       !this.newTransaction.categoryId ||
       !this.newTransaction.date
     ) {
+      this.transactionError = 'Preencha todos os campos obrigatórios.';
+
       return;
     }
 
@@ -517,8 +606,47 @@ export class App implements OnInit {
       status: this.newTransaction.status,
     };
 
+    this.transactionLoading = true;
+    this.transactionError = '';
+
+    // =========================
+    // EDIÇÃO
+    // =========================
+
+    if (this.editingTransactionId) {
+      this.transactionService.update(this.editingTransactionId, transactionToSend).subscribe({
+        next: () => {
+          this.transactionLoading = false;
+
+          this.closeTransactionModal();
+
+          this.loadTransactions();
+
+          this.cdr.detectChanges();
+        },
+
+        error: (error) => {
+          console.error('Erro ao editar transação:', error);
+
+          this.transactionError = error.error?.message || 'Não foi possível editar a transação.';
+
+          this.transactionLoading = false;
+
+          this.cdr.detectChanges();
+        },
+      });
+
+      return;
+    }
+
+    // =========================
+    // CRIAÇÃO
+    // =========================
+
     this.transactionService.create(transactionToSend).subscribe({
       next: () => {
+        this.transactionLoading = false;
+
         this.closeTransactionModal();
 
         this.loadTransactions();
@@ -528,6 +656,40 @@ export class App implements OnInit {
 
       error: (error) => {
         console.error('Erro ao cadastrar transação:', error);
+
+        this.transactionError = error.error?.message || 'Não foi possível cadastrar a transação.';
+
+        this.transactionLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // =========================
+  // EXCLUIR TRANSAÇÃO
+  // =========================
+
+  deleteTransaction(transaction: Transaction): void {
+    const confirmed = window.confirm(
+      `Deseja realmente excluir a transação "${transaction.description}"?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.transactionService.delete(transaction.id).subscribe({
+      next: () => {
+        this.loadTransactions();
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao excluir transação:', error);
+
+        window.alert('Não foi possível excluir a transação.');
       },
     });
   }

@@ -9,6 +9,7 @@ import dio.budgeting.infrastructure.persistence.entity.TransactionEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -94,5 +95,42 @@ public class JpaTransactionRepository
                 .stream()
                 .map(TransactionEntity::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Optional<Transaction>
+    findByIdAndUserId(
+            UUID transactionId,
+            UUID userId
+    ) {
+
+        return transactionEntityRepository
+                .findByIdAndUserId(
+                        transactionId,
+                        userId
+                )
+                .map(TransactionEntity::toDomain);
+    }
+
+    @Override
+    public void deleteByIdAndUserId(
+            UUID transactionId,
+            UUID userId
+    ) {
+
+        TransactionEntity entity =
+                transactionEntityRepository
+                        .findByIdAndUserId(
+                                transactionId,
+                                userId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Transação não encontrada."
+                                )
+                        );
+
+        transactionEntityRepository
+                .delete(entity);
     }
 }

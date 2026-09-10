@@ -1,11 +1,14 @@
 package dio.budgeting.infrastructure.http;
 
+import dio.budgeting.application.DeleteTransactionUseCase;
 import dio.budgeting.application.ListTransactionsByCategoryUseCase;
 import dio.budgeting.application.ListUserCategoriesUseCase;
 import dio.budgeting.application.PersistAiTransactionUseCase;
 import dio.budgeting.application.PersistTransactionUseCase;
+import dio.budgeting.application.UpdateTransactionUseCase;
 import dio.budgeting.infrastructure.ai.GroqTranscriptionService;
 import dio.budgeting.infrastructure.http.request.TransactionRequest;
+import dio.budgeting.infrastructure.http.request.UpdateTransactionRequest;
 import dio.budgeting.infrastructure.http.response.TransactionResponse;
 import dio.budgeting.infrastructure.security.AiRateLimitService;
 import dio.budgeting.infrastructure.security.CurrentUserService;
@@ -49,6 +52,12 @@ public class TransactionController {
     private final PersistTransactionUseCase
             persistTransactionUseCase;
 
+    private final UpdateTransactionUseCase
+            updateTransactionUseCase;
+
+    private final DeleteTransactionUseCase
+            deleteTransactionUseCase;
+
     private final ListTransactionsByCategoryUseCase
             listTransactionsByCategoryUseCase;
 
@@ -71,6 +80,8 @@ public class TransactionController {
 
     public TransactionController(
             PersistTransactionUseCase persistTransactionUseCase,
+            UpdateTransactionUseCase updateTransactionUseCase,
+            DeleteTransactionUseCase deleteTransactionUseCase,
             ListTransactionsByCategoryUseCase listTransactionsByCategoryUseCase,
             PersistAiTransactionUseCase persistAiTransactionUseCase,
             ListUserCategoriesUseCase listUserCategoriesUseCase,
@@ -84,6 +95,12 @@ public class TransactionController {
 
         this.persistTransactionUseCase =
                 persistTransactionUseCase;
+
+        this.updateTransactionUseCase =
+                updateTransactionUseCase;
+
+        this.deleteTransactionUseCase =
+                deleteTransactionUseCase;
 
         this.listTransactionsByCategoryUseCase =
                 listTransactionsByCategoryUseCase;
@@ -103,19 +120,24 @@ public class TransactionController {
         this.currentUserService =
                 currentUserService;
 
-        this.chatClient = chatClientBuilder
-                .defaultSystem(
-                        systemPrompt.getContentAsString(
-                                Charset.defaultCharset()
+        this.chatClient =
+                chatClientBuilder
+                        .defaultSystem(
+                                systemPrompt.getContentAsString(
+                                        Charset.defaultCharset()
+                                )
                         )
-                )
-                .defaultTools(
-                        listUserCategoriesUseCase,
-                        persistAiTransactionUseCase,
-                        listTransactionsByCategoryUseCase
-                )
-                .build();
+                        .defaultTools(
+                                listUserCategoriesUseCase,
+                                persistAiTransactionUseCase,
+                                listTransactionsByCategoryUseCase
+                        )
+                        .build();
     }
+
+    // =========================
+    // CRIAR TRANSAÇÃO
+    // =========================
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -135,6 +157,48 @@ public class TransactionController {
         );
     }
 
+    // =========================
+    // EDITAR TRANSAÇÃO
+    // =========================
+
+    @PutMapping("/{id}")
+    public TransactionResponse updateTransaction(
+            @PathVariable UUID id,
+            @Valid
+            @RequestBody
+            UpdateTransactionRequest request
+    ) {
+
+        var transaction =
+                updateTransactionUseCase.execute(
+                        id,
+                        request.toInput()
+                );
+
+        return TransactionResponse.from(
+                transaction
+        );
+    }
+
+    // =========================
+    // EXCLUIR TRANSAÇÃO
+    // =========================
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTransaction(
+            @PathVariable UUID id
+    ) {
+
+        deleteTransactionUseCase.execute(
+                id
+        );
+    }
+
+    // =========================
+    // LISTAR POR CATEGORIA
+    // =========================
+
     @GetMapping("/{categoryId}")
     public List<TransactionResponse> readTransactions(
             @PathVariable UUID categoryId
@@ -146,6 +210,10 @@ public class TransactionController {
                 .map(TransactionResponse::from)
                 .toList();
     }
+
+    // =========================
+    // IA TEXTO
+    // =========================
 
     @PostMapping(
             value = "/ai",
@@ -202,6 +270,10 @@ public class TransactionController {
                 response
         );
     }
+
+    // =========================
+    // IA ÁUDIO
+    // =========================
 
     @PostMapping(
             value = "/ai/audio",
@@ -298,6 +370,10 @@ public class TransactionController {
         }
     }
 
+    // =========================
+    // RATE LIMIT
+    // =========================
+
     private ResponseEntity<String>
     validateAiRateLimit() {
 
@@ -322,6 +398,10 @@ public class TransactionController {
 
         return null;
     }
+
+    // =========================
+    // VALIDAÇÃO DE ÁUDIO
+    // =========================
 
     private boolean isAllowedAudioType(
             String contentType

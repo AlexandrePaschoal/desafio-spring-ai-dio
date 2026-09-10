@@ -4,6 +4,7 @@ import dio.budgeting.infrastructure.persistence.entity.TransactionEntity;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TransactionEntityRepository
@@ -11,6 +12,11 @@ public interface TransactionEntityRepository
 
     List<TransactionEntity> findAllByCategoryIdAndUserId(
             UUID categoryId,
+            UUID userId
+    );
+
+    Optional<TransactionEntity> findByIdAndUserId(
+            UUID transactionId,
             UUID userId
     );
 }

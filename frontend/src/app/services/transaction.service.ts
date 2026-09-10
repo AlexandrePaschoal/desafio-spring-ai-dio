@@ -27,6 +27,24 @@ export class TransactionService {
     return this.http.post<Transaction>(this.apiUrl, transaction);
   }
 
+  update(
+    transactionId: string,
+    transaction: {
+      description: string;
+      amount: number;
+      categoryId: string;
+      type: 'INCOME' | 'EXPENSE';
+      date: string;
+      status: 'PENDING' | 'COMPLETED';
+    },
+  ): Observable<Transaction> {
+    return this.http.put<Transaction>(`${this.apiUrl}/${transactionId}`, transaction);
+  }
+
+  delete(transactionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${transactionId}`);
+  }
+
   processWithAi(message: string): Observable<string> {
     return this.http.post(`${this.apiUrl}/ai`, message, {
       headers: {
