@@ -1,9 +1,12 @@
 package dio.budgeting.domain.user;
 
 import dio.budgeting.application.CategoryService;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -21,6 +24,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
         this.categoryService = categoryService;
     }
+
+    // =========================
+    // CADASTRO
+    // =========================
 
     @Transactional
     public User register(RegisterUserRequest request) {
@@ -123,6 +130,10 @@ public class UserService {
         return savedUser;
     }
 
+    // =========================
+    // AUTENTICAÇÃO
+    // =========================
+
     public User authenticate(LoginRequest request) {
 
         if (request == null) {
@@ -170,5 +181,43 @@ public class UserService {
         }
 
         return user;
+    }
+
+    // =========================
+    // SALDO INICIAL
+    // =========================
+
+    @Transactional
+    public User updateInitialBalance(
+            UUID userId,
+            UpdateInitialBalanceRequest request
+    ) {
+
+        if (userId == null) {
+            throw new IllegalArgumentException(
+                    "Usuário inválido."
+            );
+        }
+
+        if (request == null) {
+            throw new IllegalArgumentException(
+                    "Dados do saldo inicial inválidos."
+            );
+        }
+
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Usuário não encontrado."
+                        )
+                );
+
+        user.updateInitialBalance(
+                request.initialBalance(),
+                request.initialBalanceDate()
+        );
+
+        return userRepository.save(user);
     }
 }

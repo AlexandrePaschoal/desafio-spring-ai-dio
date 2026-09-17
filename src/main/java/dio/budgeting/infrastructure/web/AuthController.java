@@ -27,6 +27,10 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
+    // =========================
+    // CADASTRO
+    // =========================
+
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @RequestBody RegisterUserRequest request
@@ -51,7 +55,13 @@ public class AuthController {
                                     user.getEmail(),
 
                                     "createdAt",
-                                    user.getCreatedAt()
+                                    user.getCreatedAt(),
+
+                                    "initialBalance",
+                                    user.getInitialBalance(),
+
+                                    "initialBalanceDate",
+                                    user.getInitialBalanceDate()
                             )
                     );
 
@@ -67,6 +77,10 @@ public class AuthController {
                     );
         }
     }
+
+    // =========================
+    // LOGIN
+    // =========================
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
@@ -98,7 +112,13 @@ public class AuthController {
                                     user.getEmail(),
 
                                     "createdAt",
-                                    user.getCreatedAt()
+                                    user.getCreatedAt(),
+
+                                    "initialBalance",
+                                    user.getInitialBalance(),
+
+                                    "initialBalanceDate",
+                                    user.getInitialBalanceDate()
                             )
                     )
             );
