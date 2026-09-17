@@ -48,7 +48,10 @@ public class AuthController {
                                     user.getName(),
 
                                     "email",
-                                    user.getEmail()
+                                    user.getEmail(),
+
+                                    "createdAt",
+                                    user.getCreatedAt()
                             )
                     );
 
@@ -92,7 +95,10 @@ public class AuthController {
                                     user.getName(),
 
                                     "email",
-                                    user.getEmail()
+                                    user.getEmail(),
+
+                                    "createdAt",
+                                    user.getCreatedAt()
                             )
                     )
             );

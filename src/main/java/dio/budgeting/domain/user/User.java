@@ -2,6 +2,7 @@ package dio.budgeting.domain.user;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -28,6 +29,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     protected User() {
     }
 
@@ -40,6 +44,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.createdAt = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -56,5 +61,9 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

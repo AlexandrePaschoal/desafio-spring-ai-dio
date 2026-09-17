@@ -8,6 +8,7 @@ interface LoginResponse {
     id: string;
     name: string;
     email: string;
+    createdAt: string;
   };
 }
 
@@ -65,6 +66,7 @@ export class AuthService {
     id: string;
     name: string;
     email: string;
+    createdAt: string;
   } | null {
     const user = sessionStorage.getItem('user');
 
