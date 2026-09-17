@@ -207,6 +207,15 @@
 
         <button
           type="button"
+          [class.active]="activeSection === 'history'"
+          (click)="setSection('history')"
+        >
+          <span>📅</span>
+          Histórico
+        </button>
+
+        <button
+          type="button"
           [class.active]="activeSection === 'assistant'"
           (click)="setSection('assistant')"
         >
@@ -856,6 +865,335 @@
                   <h4>Nenhuma transação nesta categoria</h4>
 
                   <p>As transações dessa categoria aparecerão aqui.</p>
+                </div>
+              }
+            </div>
+          </section>
+        }
+      }
+
+      <!-- ========================= -->
+      <!-- HISTÓRICO -->
+      <!-- ========================= -->
+
+      @if (activeSection === 'history') {
+        @if (!selectedHistoryPeriod) {
+          <!-- ========================= -->
+          <!-- LISTA DE PERÍODOS -->
+          <!-- ========================= -->
+
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">Histórico financeiro</p>
+              <h2>Histórico</h2>
+            </div>
+          </header>
+
+          <section class="panel">
+            @if (historyYears.length > 0) {
+              <div class="history-years">
+                @for (yearGroup of historyYears; track yearGroup.year) {
+                  <section class="history-year">
+                    <div class="history-year-header">
+                      <span>Ano</span>
+                      <h3>{{ yearGroup.year }}</h3>
+                    </div>
+
+                    <div class="history-list">
+                      @for (period of yearGroup.periods; track period.year + '-' + period.month) {
+                        <button
+                          type="button"
+                          class="history-period"
+                          (click)="openHistoryPeriod(period)"
+                        >
+                          <div>
+                            <strong>{{ period.monthName }}</strong>
+                          </div>
+
+                          <span>Ver período →</span>
+                        </button>
+                      }
+                    </div>
+                  </section>
+                }
+              </div>
+            } @else {
+              <div class="empty-state">
+                <div class="empty-icon">📅</div>
+
+                <h4>Nenhum período disponível</h4>
+
+                <p>
+                  Seu histórico financeiro aparecerá aqui quando você registrar sua primeira
+                  transação.
+                </p>
+              </div>
+            }
+          </section>
+        } @else {
+          <!-- ========================= -->
+          <!-- PERÍODO SELECIONADO -->
+          <!-- ========================= -->
+
+          <header class="topbar">
+            <div>
+              <button type="button" class="ghost-button" (click)="closeHistoryPeriod()">
+                ← Voltar para histórico
+              </button>
+
+              <p class="eyebrow">Histórico mensal</p>
+
+              <h2>
+                {{ selectedHistoryPeriod.monthName }}
+                {{ selectedHistoryPeriod.year }}
+              </h2>
+            </div>
+          </header>
+
+          <!-- ========================= -->
+          <!-- RESUMO DO PERÍODO -->
+          <!-- ========================= -->
+
+          <!-- ========================= -->
+          <!-- RESUMO DO PERÍODO -->
+          <!-- ========================= -->
+
+          <section class="history-financial-summary">
+            <!-- ========================= -->
+            <!-- PREVISTO -->
+            <!-- ========================= -->
+
+            <article class="history-summary-group">
+              <div class="history-summary-header">
+                <div>
+                  <p class="eyebrow">Planejamento</p>
+                  <h3>Previsto</h3>
+                </div>
+
+                <span class="history-summary-label"> Todas as movimentações </span>
+              </div>
+
+              <div class="history-summary-values">
+                <!-- RECEITAS PREVISTAS -->
+
+                <div class="history-summary-item">
+                  <span>Receitas</span>
+
+                  <strong>
+                    {{
+                      historyIncome.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+
+                <!-- DESPESAS PREVISTAS -->
+
+                <div class="history-summary-item">
+                  <span>Despesas</span>
+
+                  <strong>
+                    {{
+                      historyExpenses.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+
+                <!-- SALDO PREVISTO -->
+
+                <div class="history-summary-item">
+                  <span>Saldo previsto</span>
+
+                  <strong>
+                    {{
+                      historyBalance.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+              </div>
+            </article>
+
+            <!-- ========================= -->
+            <!-- REALIZADO -->
+            <!-- ========================= -->
+
+            <article class="history-summary-group">
+              <div class="history-summary-header">
+                <div>
+                  <p class="eyebrow">Movimentação efetiva</p>
+                  <h3>Realizado</h3>
+                </div>
+
+                <span class="history-summary-label"> Somente concluídas </span>
+              </div>
+
+              <div class="history-summary-values">
+                <!-- RECEITAS RECEBIDAS -->
+
+                <div class="history-summary-item">
+                  <span>Recebido</span>
+
+                  <strong>
+                    {{
+                      historyCompletedIncome.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+
+                <!-- DESPESAS PAGAS -->
+
+                <div class="history-summary-item">
+                  <span>Pago</span>
+
+                  <strong>
+                    {{
+                      historyCompletedExpenses.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+
+                <!-- SALDO REALIZADO -->
+
+                <div class="history-summary-item">
+                  <span>Saldo realizado</span>
+
+                  <strong>
+                    {{
+                      historyCompletedBalance.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <!-- ========================= -->
+          <!-- TRANSAÇÕES DO PERÍODO -->
+          <!-- ========================= -->
+
+          <section class="panel transactions-page">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Movimentações</p>
+
+                <h3>Transações do período</h3>
+              </div>
+
+              <strong>
+                {{ historyTransactions.length }}
+
+                {{ historyTransactions.length === 1 ? 'transação' : 'transações' }}
+              </strong>
+            </div>
+
+            <div class="transaction-list">
+              @for (transaction of historyTransactions; track transaction.id) {
+                <div class="transaction-item">
+                  <div class="transaction-info">
+                    <!-- ÍCONE -->
+
+                    <div class="transaction-icon">
+                      @if (transaction.type === 'INCOME') {
+                        📈
+                      } @else {
+                        💳
+                      }
+                    </div>
+
+                    <!-- INFORMAÇÕES -->
+
+                    <div>
+                      <strong>
+                        {{ transaction.description }}
+                      </strong>
+
+                      <div class="transaction-metadata">
+                        <!-- CATEGORIA -->
+
+                        <span class="category-badge">
+                          {{ transaction.category }}
+                        </span>
+
+                        <!-- DATA -->
+
+                        <span class="transaction-date">
+                          {{ transaction.date }}
+                        </span>
+
+                        <!-- STATUS -->
+
+                        <span
+                          class="status-badge"
+                          [class.completed]="transaction.status === 'COMPLETED'"
+                          [class.pending]="transaction.status === 'PENDING'"
+                        >
+                          @if (transaction.type === 'EXPENSE') {
+                            @if (transaction.status === 'COMPLETED') {
+                              Pago
+                            } @else {
+                              Pendente
+                            }
+                          } @else {
+                            @if (transaction.status === 'COMPLETED') {
+                              Recebido
+                            } @else {
+                              A receber
+                            }
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- VALOR -->
+
+                  <strong
+                    class="transaction-amount"
+                    [class.income]="transaction.type === 'INCOME'"
+                    [class.expense]="transaction.type === 'EXPENSE'"
+                  >
+                    @if (transaction.type === 'INCOME') {
+                      +
+                    } @else {
+                      -
+                    }
+
+                    {{
+                      transaction.amount.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })
+                    }}
+                  </strong>
+                </div>
+              } @empty {
+                <!-- ========================= -->
+                <!-- PERÍODO SEM TRANSAÇÕES -->
+                <!-- ========================= -->
+
+                <div class="empty-state">
+                  <div class="empty-icon">📄</div>
+
+                  <h4>Nenhuma transação neste período</h4>
+
+                  <p>Não existem movimentações registradas neste mês.</p>
                 </div>
               }
             </div>

@@ -1497,3 +1497,273 @@
     padding: 18px;
   }
 }
+
+/* ========================= */
+/* HISTÓRICO */
+/* ========================= */
+
+.history-years {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.history-year {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.history-year-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.history-year-header span {
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.history-year-header h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 24px;
+  line-height: 1;
+}
+
+.history-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.history-period {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 18px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  color: #0f172a;
+
+  font: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.history-period:hover {
+  border-color: #cbd5e1;
+
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+
+  transform: translateY(-2px);
+}
+
+.history-period div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-period strong {
+  color: #0f172a;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  text-transform: capitalize;
+}
+
+.history-period > span {
+  color: #64748b;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* BOTÃO VOLTAR */
+
+.history-year + .history-year {
+  margin-top: 4px;
+}
+
+/* ========================= */
+/* RESPONSIVIDADE DO HISTÓRICO */
+/* ========================= */
+
+@media (max-width: 1000px) {
+  .history-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .history-list {
+    grid-template-columns: 1fr;
+  }
+
+  .history-period {
+    padding: 16px;
+  }
+
+  .history-year-header h3 {
+    font-size: 22px;
+  }
+}
+
+/* ========================= */
+/* RESUMO DO HISTÓRICO */
+/* ========================= */
+
+.history-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .history-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================= */
+/* RESUMO FINANCEIRO DO HISTÓRICO */
+/* ========================= */
+
+.history-financial-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.history-summary-group {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.history-summary-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.history-summary-header .eyebrow {
+  margin-bottom: 4px;
+}
+
+.history-summary-header h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 20px;
+}
+
+.history-summary-label {
+  padding: 6px 10px;
+
+  background: #f1f5f9;
+
+  border-radius: 999px;
+
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.history-summary-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.history-summary-item {
+  min-width: 0;
+}
+
+.history-summary-item span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.history-summary-item strong {
+  display: block;
+
+  color: #0f172a;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  overflow-wrap: break-word;
+}
+
+/* ========================= */
+/* RESPONSIVIDADE */
+/* ========================= */
+
+@media (max-width: 1100px) {
+  .history-financial-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .history-summary-group {
+    padding: 18px;
+  }
+
+  .history-summary-header {
+    flex-direction: column;
+  }
+
+  .history-summary-values {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

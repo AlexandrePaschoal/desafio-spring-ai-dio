@@ -8,6 +8,17 @@ import { CategoryService } from './services/category.service';
 import { Category } from './models/category';
 import { Transaction } from './models/transaction';
 
+interface HistoryPeriod {
+  year: number;
+  month: number;
+  monthName: string;
+}
+
+interface HistoryYear {
+  year: number;
+  periods: HistoryPeriod[];
+}
+
 @Component({
   selector: 'app-root',
   imports: [FormsModule],
@@ -25,6 +36,7 @@ export class App implements OnInit {
     id: string;
     name: string;
     email: string;
+    createdAt: string;
   } | null = null;
 
   // =========================
@@ -60,8 +72,156 @@ export class App implements OnInit {
   // NAVEGAÇÃO
   // =========================
 
-  activeSection: 'dashboard' | 'transactions' | 'categories' | 'assistant' = 'dashboard';
+  activeSection: 'dashboard' | 'transactions' | 'categories' | 'history' | 'assistant' =
+    'dashboard';
 
+  // =========================
+  // HISTÓRICO
+  // =========================
+
+  get historyPeriods(): HistoryPeriod[] {
+    if (this.transactions.length === 0) {
+      return [];
+    }
+
+    const validTransactions = this.transactions
+      .filter((transaction) => transaction.date)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (validTransactions.length === 0) {
+      return [];
+    }
+
+    const [firstYear, firstMonth] = validTransactions[0].date.split('-').map(Number);
+
+    const today = new Date();
+
+    const periods: HistoryPeriod[] = [];
+
+    let year = firstYear;
+    let month = firstMonth - 1;
+
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    while (year < currentYear || (year === currentYear && month <= currentMonth)) {
+      const date = new Date(year, month, 1);
+
+      periods.push({
+        year,
+        month: month + 1,
+        monthName: date.toLocaleDateString('pt-BR', {
+          month: 'long',
+        }),
+      });
+
+      month++;
+
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+    }
+
+    return periods;
+  }
+
+  // =========================
+  // AGRUPAMENTO POR ANO
+  // =========================
+
+  get historyYears(): HistoryYear[] {
+    const years = new Map<number, HistoryPeriod[]>();
+
+    for (const period of this.historyPeriods) {
+      const periods = years.get(period.year) ?? [];
+
+      periods.push(period);
+
+      years.set(period.year, periods);
+    }
+
+    return Array.from(years.entries())
+      .map(([year, periods]) => ({
+        year,
+        periods: periods.sort((a, b) => b.month - a.month),
+      }))
+      .sort((a, b) => b.year - a.year);
+  }
+
+  // =========================
+  // PERÍODO SELECIONADO
+  // =========================
+
+  selectedHistoryPeriod: HistoryPeriod | null = null;
+
+  openHistoryPeriod(period: HistoryPeriod): void {
+    this.selectedHistoryPeriod = period;
+  }
+
+  closeHistoryPeriod(): void {
+    this.selectedHistoryPeriod = null;
+  }
+
+  // =========================
+  // TRANSAÇÕES DO PERÍODO
+  // =========================
+
+  get historyTransactions(): Transaction[] {
+    if (!this.selectedHistoryPeriod) {
+      return [];
+    }
+
+    return this.transactions.filter((transaction) => {
+      const [year, month] = transaction.date.split('-').map(Number);
+
+      return (
+        year === this.selectedHistoryPeriod!.year && month === this.selectedHistoryPeriod!.month
+      );
+    });
+  }
+
+  // =========================
+  // PREVISTO
+  // PENDING + COMPLETED
+  // =========================
+
+  get historyIncome(): number {
+    return this.historyTransactions
+      .filter((transaction) => transaction.type === 'INCOME')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  get historyExpenses(): number {
+    return this.historyTransactions
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  get historyBalance(): number {
+    return this.historyIncome - this.historyExpenses;
+  }
+
+  // =========================
+  // REALIZADO
+  // SOMENTE COMPLETED
+  // =========================
+
+  get historyCompletedIncome(): number {
+    return this.historyTransactions
+      .filter((transaction) => transaction.type === 'INCOME' && transaction.status === 'COMPLETED')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  get historyCompletedExpenses(): number {
+    return this.historyTransactions
+      .filter((transaction) => transaction.type === 'EXPENSE' && transaction.status === 'COMPLETED')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+  }
+
+  get historyCompletedBalance(): number {
+    return this.historyCompletedIncome - this.historyCompletedExpenses;
+  }
   // =========================
   // DASHBOARD
   // =========================
@@ -370,7 +530,7 @@ export class App implements OnInit {
   // NAVEGAÇÃO
   // =========================
 
-  setSection(section: 'dashboard' | 'transactions' | 'categories' | 'assistant'): void {
+  setSection(section: 'dashboard' | 'transactions' | 'categories' | 'history' | 'assistant'): void {
     this.activeSection = section;
 
     if (section === 'assistant') {
