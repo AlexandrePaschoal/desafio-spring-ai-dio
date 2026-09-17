@@ -37,6 +37,8 @@ export class App implements OnInit {
     name: string;
     email: string;
     createdAt: string;
+    initialBalance: number;
+    initialBalanceDate: string;
   } | null = null;
 
   // =========================
@@ -237,6 +239,20 @@ export class App implements OnInit {
 
   searchTerm = '';
   selectedCategory = 'ALL';
+
+  // =========================
+  // SALDO INICIAL
+  // =========================
+
+  showInitialBalanceModal = false;
+
+  initialBalanceLoading = false;
+  initialBalanceError = '';
+
+  initialBalanceForm = {
+    amount: 0,
+    date: this.getTodayDate(),
+  };
 
   // =========================
   // TRANSAÇÃO
@@ -768,12 +784,48 @@ export class App implements OnInit {
 
   // SALDO ATUAL
   get currentBalance(): number {
-    return this.receivedIncome - this.paidExpenses;
+    const initialBalance = (this.currentUser?.initialBalance ?? 0) / 100;
+
+    const initialBalanceDate = this.currentUser?.initialBalanceDate;
+
+    const completedTransactions = this.transactions.filter((transaction) => {
+      const isCompleted = transaction.status === 'COMPLETED';
+
+      const isAfterInitialBalance = !initialBalanceDate || transaction.date >= initialBalanceDate;
+
+      return isCompleted && isAfterInitialBalance;
+    });
+
+    const income = completedTransactions
+      .filter((transaction) => transaction.type === 'INCOME')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    const expenses = completedTransactions
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    return initialBalance + income - expenses;
   }
 
   // SALDO PROJETADO
   get projectedBalance(): number {
-    return this.totalIncome - this.totalExpenses;
+    const initialBalance = (this.currentUser?.initialBalance ?? 0) / 100;
+
+    const initialBalanceDate = this.currentUser?.initialBalanceDate;
+
+    const transactionsFromInitialBalance = this.transactions.filter((transaction) => {
+      return !initialBalanceDate || transaction.date >= initialBalanceDate;
+    });
+
+    const income = transactionsFromInitialBalance
+      .filter((transaction) => transaction.type === 'INCOME')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    const expenses = transactionsFromInitialBalance
+      .filter((transaction) => transaction.type === 'EXPENSE')
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    return initialBalance + income - expenses;
   }
 
   get balance(): number {
@@ -834,6 +886,70 @@ export class App implements OnInit {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = 'ALL';
+  }
+
+  // =========================
+  // SALDO INICIAL
+  // =========================
+
+  openInitialBalanceModal(): void {
+    this.initialBalanceError = '';
+
+    this.initialBalanceForm = {
+      amount: (this.currentUser?.initialBalance ?? 0) / 100,
+      date: this.currentUser?.initialBalanceDate || this.getTodayDate(),
+    };
+
+    this.showInitialBalanceModal = true;
+  }
+
+  closeInitialBalanceModal(): void {
+    if (this.initialBalanceLoading) {
+      return;
+    }
+
+    this.showInitialBalanceModal = false;
+    this.initialBalanceError = '';
+  }
+
+  saveInitialBalance(): void {
+    if (!this.initialBalanceForm.date) {
+      this.initialBalanceError = 'Informe a data de referência.';
+      return;
+    }
+
+    const amountInCents = Math.round(this.initialBalanceForm.amount * 100);
+
+    this.initialBalanceLoading = true;
+    this.initialBalanceError = '';
+
+    this.authService.updateInitialBalance(amountInCents, this.initialBalanceForm.date).subscribe({
+      next: (response) => {
+        if (this.currentUser) {
+          this.currentUser = {
+            ...this.currentUser,
+            initialBalance: response.initialBalance,
+            initialBalanceDate: response.initialBalanceDate,
+          };
+        }
+
+        this.initialBalanceLoading = false;
+        this.showInitialBalanceModal = false;
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+        console.error('Erro ao atualizar saldo inicial:', error);
+
+        this.initialBalanceError =
+          error.error?.message || 'Não foi possível atualizar o saldo inicial.';
+
+        this.initialBalanceLoading = false;
+
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   // =========================

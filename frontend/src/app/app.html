@@ -306,6 +306,14 @@
                   })
                 }}
               </strong>
+
+              <button
+                type="button"
+                class="balance-config-button"
+                (click)="openInitialBalanceModal()"
+              >
+                Configurar saldo
+              </button>
             </div>
           </article>
 
@@ -1202,6 +1210,87 @@
       }
     </main>
   </div>
+
+  <!-- ========================= -->
+  <!-- MODAL SALDO INICIAL -->
+  <!-- ========================= -->
+
+  @if (showInitialBalanceModal) {
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Configuração financeira</p>
+            <h3>Configurar saldo inicial</h3>
+          </div>
+
+          <button
+            type="button"
+            class="close-button"
+            (click)="closeInitialBalanceModal()"
+            [disabled]="initialBalanceLoading"
+          >
+            ✕
+          </button>
+        </div>
+
+        <p>Informe quanto você possuía na data em que deseja começar o controle financeiro.</p>
+
+        <div class="form-group">
+          <label for="initialBalance"> Saldo inicial </label>
+
+          <input
+            id="initialBalance"
+            type="number"
+            step="0.01"
+            [(ngModel)]="initialBalanceForm.amount"
+            [disabled]="initialBalanceLoading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="initialBalanceDate"> Data de referência </label>
+
+          <input
+            id="initialBalanceDate"
+            type="date"
+            [(ngModel)]="initialBalanceForm.date"
+            [disabled]="initialBalanceLoading"
+          />
+        </div>
+
+        @if (initialBalanceError) {
+          <p class="error-message">
+            {{ initialBalanceError }}
+          </p>
+        }
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="cancel-button"
+            (click)="closeInitialBalanceModal()"
+            [disabled]="initialBalanceLoading"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="primary-button"
+            (click)="saveInitialBalance()"
+            [disabled]="initialBalanceLoading"
+          >
+            @if (initialBalanceLoading) {
+              Salvando...
+            } @else {
+              Salvar saldo
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- ========================= -->
   <!-- MODAL NOVA TRANSAÇÃO -->
