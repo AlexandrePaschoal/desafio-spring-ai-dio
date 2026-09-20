@@ -152,6 +152,50 @@ export class App implements OnInit {
   }
 
   // =========================
+  // PERÍODO DO DASHBOARD
+  // =========================
+
+  dashboardYear = new Date().getFullYear();
+  dashboardMonth = new Date().getMonth() + 1;
+
+  get dashboardPeriodLabel(): string {
+    const date = new Date(this.dashboardYear, this.dashboardMonth - 1, 1);
+
+    const label = date.toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric',
+    });
+
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  get dashboardTransactions(): Transaction[] {
+    return this.transactions.filter((transaction) => {
+      const [year, month] = transaction.date.split('-').map(Number);
+
+      return year === this.dashboardYear && month === this.dashboardMonth;
+    });
+  }
+
+  previousDashboardMonth(): void {
+    this.dashboardMonth--;
+
+    if (this.dashboardMonth < 1) {
+      this.dashboardMonth = 12;
+      this.dashboardYear--;
+    }
+  }
+
+  nextDashboardMonth(): void {
+    this.dashboardMonth++;
+
+    if (this.dashboardMonth > 12) {
+      this.dashboardMonth = 1;
+      this.dashboardYear++;
+    }
+  }
+
+  // =========================
   // PERÍODO SELECIONADO
   // =========================
 
@@ -761,23 +805,16 @@ export class App implements OnInit {
       .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
-  // DESPESAS TOTAIS
-  get totalExpenses(): number {
-    return this.transactions
-      .filter((transaction) => transaction.type === 'EXPENSE')
-      .reduce((total, transaction) => total + transaction.amount, 0);
-  }
-
-  // RECEITAS JÁ RECEBIDAS
+  // RECEITAS RECEBIDAS NO MÊS DO DASHBOARD
   get receivedIncome(): number {
-    return this.transactions
+    return this.dashboardTransactions
       .filter((transaction) => transaction.type === 'INCOME' && transaction.status === 'COMPLETED')
       .reduce((total, transaction) => total + transaction.amount, 0);
   }
 
-  // DESPESAS JÁ PAGAS
+  // DESPESAS PAGAS NO MÊS DO DASHBOARD
   get paidExpenses(): number {
-    return this.transactions
+    return this.dashboardTransactions
       .filter((transaction) => transaction.type === 'EXPENSE' && transaction.status === 'COMPLETED')
       .reduce((total, transaction) => total + transaction.amount, 0);
   }

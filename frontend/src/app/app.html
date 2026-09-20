@@ -251,6 +251,30 @@
           <button class="primary-button" (click)="openTransactionModal()">+ Nova transação</button>
         </header>
 
+        <div class="dashboard-period">
+          <button
+            type="button"
+            class="period-button"
+            (click)="previousDashboardMonth()"
+            aria-label="Mês anterior"
+          >
+            ‹
+          </button>
+
+          <div class="period-label">
+            {{ dashboardPeriodLabel }}
+          </div>
+
+          <button
+            type="button"
+            class="period-button"
+            (click)="nextDashboardMonth()"
+            aria-label="Próximo mês"
+          >
+            ›
+          </button>
+        </div>
+
         <section class="cards">
           <!-- RECEITAS RECEBIDAS -->
 
