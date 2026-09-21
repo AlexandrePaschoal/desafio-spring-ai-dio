@@ -1039,210 +1039,405 @@
         </section>
       }
 
-      <!-- ========================= -->
-      <!-- CATEGORIAS -->
-      <!-- ========================= -->
-
       @if (activeSection === 'categories') {
         @if (!selectedCategoryView) {
-          <header class="topbar">
+          <!-- Cabeçalho -->
+          <header class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p class="eyebrow">Organização</p>
-              <h2>Categorias</h2>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Organização
+              </p>
+
+              <h2 class="text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
+                Categorias
+              </h2>
+
+              <p class="mt-2 text-sm text-slate-400">
+                Organize suas movimentações para acompanhar melhor seus gastos e receitas.
+              </p>
             </div>
 
-            <button class="primary-button" (click)="openCategoryModal()">+ Nova categoria</button>
+            <button
+              type="button"
+              (click)="openCategoryModal()"
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            >
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+
+              Nova categoria
+            </button>
           </header>
 
+          <!-- Erro -->
           @if (categoryError) {
-            <div class="login-error">
+            <div
+              class="mb-6 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+            >
               {{ categoryError }}
             </div>
           }
 
-          <section class="category-grid">
+          <!-- Grid -->
+          <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             @for (category of visibleCategories; track category.id) {
-              <article class="category-card">
+              <article
+                class="group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 transition hover:border-slate-700"
+              >
                 <button
                   type="button"
-                  class="category-card-main"
                   (click)="openCategoryView(category)"
+                  class="w-full p-5 text-left transition hover:bg-slate-800/40"
                 >
-                  <div class="category-card-icon">💳</div>
+                  <div class="flex items-start gap-4">
+                    <!-- Ícone -->
+                    <div
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400"
+                    >
+                      <svg
+                        class="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M7 15h2" />
+                      </svg>
+                    </div>
 
-                  <div class="category-card-content">
-                    <h3>{{ category.name }}</h3>
+                    <div class="min-w-0 flex-1">
+                      <h3 class="truncate text-base font-semibold text-slate-200">
+                        {{ category.name }}
+                      </h3>
 
-                    <strong>
-                      {{
-                        (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })
-                      }}
-                    </strong>
+                      <strong class="mt-2 block text-xl font-bold tracking-tight text-slate-100">
+                        {{
+                          (categoryTotals[category.id] || 0).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })
+                        }}
+                      </strong>
 
-                    <span>
-                      {{ getCategoryTransactionCount(category.name) }}
-                      {{
-                        getCategoryTransactionCount(category.name) === 1
-                          ? 'transação'
-                          : 'transações'
-                      }}
-                    </span>
+                      <p class="mt-1 text-xs text-slate-500">
+                        {{ getCategoryTransactionCount(category.name) }}
+                        {{
+                          getCategoryTransactionCount(category.name) === 1
+                            ? 'transação'
+                            : 'transações'
+                        }}
+                      </p>
 
-                    <span class="category-card-link"> Ver transações → </span>
+                      <span
+                        class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-blue-400 transition group-hover:text-blue-300"
+                      >
+                        Ver transações
+
+                        <svg
+                          class="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 </button>
 
                 @if (category.name.toLowerCase() !== 'sem categoria') {
                   <button
                     type="button"
-                    class="category-delete-button"
                     [disabled]="categoryLoading"
                     (click)="deleteCategory(category)"
+                    class="w-full border-t border-slate-800 px-5 py-3 text-left text-xs font-semibold text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Excluir categoria
                   </button>
                 }
               </article>
             } @empty {
-              <div class="empty-state">
-                <div class="empty-icon">📁</div>
+              <div
+                class="col-span-full flex min-h-72 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/50 px-6 text-center"
+              >
+                <div
+                  class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-400"
+                >
+                  <svg
+                    class="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 7h5l2 2h11v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <path d="M3 7V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </div>
 
-                <h4>Nenhuma categoria encontrada</h4>
+                <h4 class="font-semibold text-slate-200">Nenhuma categoria encontrada</h4>
 
-                <p>Crie uma categoria para organizar suas transações.</p>
+                <p class="mt-1 max-w-sm text-sm leading-6 text-slate-500">
+                  Crie uma categoria para organizar suas transações.
+                </p>
               </div>
             }
           </section>
         } @else {
-          <header class="topbar">
+          <!-- Visualização da categoria -->
+          <header class="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <button type="button" class="ghost-button" (click)="closeCategoryView()">
-                ← Voltar para categorias
+              <button
+                type="button"
+                (click)="closeCategoryView()"
+                class="mb-5 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              >
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+
+                Voltar para categorias
               </button>
 
-              <p class="eyebrow">Categoria</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Categoria
+              </p>
 
-              <h2>{{ selectedCategoryView.name }}</h2>
+              <h2 class="text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
+                {{ selectedCategoryView.name }}
+              </h2>
             </div>
 
-            <button class="primary-button" (click)="openTransactionModal()">
-              + Nova transação
+            <button
+              type="button"
+              (click)="openTransactionModal()"
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            >
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+
+              Nova transação
             </button>
           </header>
 
-          <section class="category-summary">
-            <article class="card">
-              <div class="card-icon">📈</div>
-
-              <div>
-                <span>Receitas</span>
-
-                <strong>
-                  {{
-                    getCategoryIncome(selectedCategoryView.name).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
-                  }}
-                </strong>
+          <!-- Resumo -->
+          <section class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <!-- Receitas -->
+            <article class="rounded-2xl border border-emerald-500/20 bg-slate-900 p-5">
+              <div
+                class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400"
+              >
+                <svg
+                  class="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M12 19V5" />
+                  <path d="m5 12 7-7 7 7" />
+                </svg>
               </div>
+
+              <p class="text-sm font-medium text-slate-400">Receitas</p>
+
+              <strong class="mt-2 block text-xl font-bold text-emerald-400">
+                {{
+                  getCategoryIncome(selectedCategoryView.name).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }}
+              </strong>
             </article>
 
-            <article class="card">
-              <div class="card-icon">📉</div>
-
-              <div>
-                <span>Despesas</span>
-
-                <strong>
-                  {{
-                    getCategoryExpenses(selectedCategoryView.name).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })
-                  }}
-                </strong>
+            <!-- Despesas -->
+            <article class="rounded-2xl border border-rose-500/20 bg-slate-900 p-5">
+              <div
+                class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400"
+              >
+                <svg
+                  class="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14" />
+                  <path d="m19 12-7 7-7-7" />
+                </svg>
               </div>
+
+              <p class="text-sm font-medium text-slate-400">Despesas</p>
+
+              <strong class="mt-2 block text-xl font-bold text-rose-400">
+                {{
+                  getCategoryExpenses(selectedCategoryView.name).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }}
+              </strong>
             </article>
 
-            <article class="card">
-              <div class="card-icon">💳</div>
-
-              <div>
-                <span>Transações</span>
-
-                <strong>
-                  {{ getCategoryTransactionCount(selectedCategoryView.name) }}
-                </strong>
+            <!-- Quantidade -->
+            <article class="rounded-2xl border border-blue-500/20 bg-slate-900 p-5">
+              <div
+                class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400"
+              >
+                <svg
+                  class="h-5 w-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path d="M4 6h16" />
+                  <path d="M4 12h16" />
+                  <path d="M4 18h16" />
+                </svg>
               </div>
+
+              <p class="text-sm font-medium text-slate-400">Transações</p>
+
+              <strong class="mt-2 block text-xl font-bold text-slate-100">
+                {{ getCategoryTransactionCount(selectedCategoryView.name) }}
+              </strong>
             </article>
           </section>
 
-          <section class="panel transactions-page">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Movimentações</p>
+          <!-- Transações da categoria -->
+          <section
+            class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-sm"
+          >
+            <div class="border-b border-slate-800 p-5">
+              <p class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Movimentações
+              </p>
 
-                <h3>Transações de {{ selectedCategoryView.name }}</h3>
-              </div>
+              <h3 class="text-lg font-semibold text-slate-100">
+                Transações de {{ selectedCategoryView.name }}
+              </h3>
             </div>
 
-            <div class="transaction-list">
+            <div class="px-4 sm:px-5">
               @for (
                 transaction of getTransactionsByCategory(selectedCategoryView.name);
                 track transaction.id
               ) {
-                <div class="transaction-item">
-                  <div class="transaction-info">
-                    <div class="transaction-icon">
+                <div
+                  class="flex flex-col gap-4 border-b border-slate-800 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      [class.bg-emerald-500/10]="transaction.type === 'INCOME'"
+                      [class.text-emerald-400]="transaction.type === 'INCOME'"
+                      [class.bg-rose-500/10]="transaction.type === 'EXPENSE'"
+                      [class.text-rose-400]="transaction.type === 'EXPENSE'"
+                    >
                       @if (transaction.type === 'INCOME') {
-                        📈
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 19V5" />
+                          <path d="m5 12 7-7 7 7" />
+                        </svg>
                       } @else {
-                        💳
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="m19 12-7 7-7-7" />
+                        </svg>
                       }
                     </div>
 
-                    <div>
-                      <strong>
+                    <div class="min-w-0">
+                      <strong class="block truncate text-sm font-semibold text-slate-200">
                         {{ transaction.description }}
                       </strong>
 
-                      <div class="transaction-metadata">
-                        <span class="transaction-date">
+                      <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-slate-500">
                           {{ transaction.date }}
                         </span>
 
-                        <span
-                          class="status-badge"
-                          [class.completed]="transaction.status === 'COMPLETED'"
-                          [class.pending]="transaction.status === 'PENDING'"
-                        >
-                          @if (transaction.type === 'EXPENSE') {
-                            @if (transaction.status === 'COMPLETED') {
+                        @if (transaction.status === 'COMPLETED') {
+                          <span
+                            class="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400"
+                          >
+                            @if (transaction.type === 'EXPENSE') {
                               Pago
                             } @else {
-                              Pendente
-                            }
-                          } @else {
-                            @if (transaction.status === 'COMPLETED') {
                               Recebido
+                            }
+                          </span>
+                        } @else {
+                          <span
+                            class="rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400"
+                          >
+                            @if (transaction.type === 'EXPENSE') {
+                              Pendente
                             } @else {
                               A receber
                             }
-                          }
-                        </span>
+                          </span>
+                        }
                       </div>
                     </div>
                   </div>
 
-                  <div class="transaction-item-actions">
+                  <div
+                    class="flex shrink-0 items-center justify-between gap-4 sm:flex-col sm:items-end"
+                  >
                     <strong
-                      class="transaction-amount"
-                      [class.income]="transaction.type === 'INCOME'"
-                      [class.expense]="transaction.type === 'EXPENSE'"
+                      class="whitespace-nowrap text-sm font-semibold"
+                      [class.text-emerald-400]="transaction.type === 'INCOME'"
+                      [class.text-rose-400]="transaction.type === 'EXPENSE'"
                     >
                       @if (transaction.type === 'INCOME') {
                         +
@@ -1258,19 +1453,19 @@
                       }}
                     </strong>
 
-                    <div class="transaction-buttons">
+                    <div class="flex items-center gap-1">
                       <button
                         type="button"
-                        class="ghost-button"
                         (click)="openEditTransaction(transaction)"
+                        class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
                       >
                         Editar
                       </button>
 
                       <button
                         type="button"
-                        class="clear-filter-button"
                         (click)="deleteTransaction(transaction)"
+                        class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300"
                       >
                         Excluir
                       </button>
@@ -1278,12 +1473,32 @@
                   </div>
                 </div>
               } @empty {
-                <div class="empty-state">
-                  <div class="empty-icon">📄</div>
+                <div
+                  class="flex min-h-64 flex-col items-center justify-center px-4 py-10 text-center"
+                >
+                  <div
+                    class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-400"
+                  >
+                    <svg
+                      class="h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M8 13h8" />
+                      <path d="M8 17h5" />
+                    </svg>
+                  </div>
 
-                  <h4>Nenhuma transação nesta categoria</h4>
+                  <h4 class="font-semibold text-slate-200">Nenhuma transação nesta categoria</h4>
 
-                  <p>As transações dessa categoria aparecerão aqui.</p>
+                  <p class="mt-1 max-w-sm text-sm leading-6 text-slate-500">
+                    As transações dessa categoria aparecerão aqui.
+                  </p>
                 </div>
               }
             </div>
@@ -1297,39 +1512,84 @@
 
       @if (activeSection === 'history') {
         @if (!selectedHistoryPeriod) {
-          <!-- ========================= -->
-          <!-- LISTA DE PERÍODOS -->
-          <!-- ========================= -->
+          <!-- Cabeçalho -->
+          <header class="mb-8">
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Histórico financeiro
+            </p>
 
-          <header class="topbar">
-            <div>
-              <p class="eyebrow">Histórico financeiro</p>
-              <h2>Histórico</h2>
-            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">Histórico</h2>
+
+            <p class="mt-2 text-sm text-slate-400">
+              Consulte suas movimentações financeiras organizadas por período.
+            </p>
           </header>
 
-          <section class="panel">
+          <!-- Períodos -->
+          <section class="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm sm:p-6">
             @if (historyYears.length > 0) {
-              <div class="history-years">
+              <div class="space-y-8">
                 @for (yearGroup of historyYears; track yearGroup.year) {
-                  <section class="history-year">
-                    <div class="history-year-header">
-                      <span>Ano</span>
-                      <h3>{{ yearGroup.year }}</h3>
+                  <section>
+                    <!-- Ano -->
+                    <div class="mb-4 flex items-end gap-2 border-b border-slate-800 pb-3">
+                      <span
+                        class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500"
+                      >
+                        Ano
+                      </span>
+
+                      <h3 class="text-2xl font-bold leading-none text-slate-100">
+                        {{ yearGroup.year }}
+                      </h3>
                     </div>
 
-                    <div class="history-list">
+                    <!-- Meses -->
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                       @for (period of yearGroup.periods; track period.year + '-' + period.month) {
                         <button
                           type="button"
-                          class="history-period"
                           (click)="openHistoryPeriod(period)"
+                          class="group flex w-full items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-left transition hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-800/60"
                         >
-                          <div>
-                            <strong>{{ period.monthName }}</strong>
+                          <div class="flex items-center gap-3">
+                            <div
+                              class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400"
+                            >
+                              <svg
+                                class="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                aria-hidden="true"
+                              >
+                                <rect x="3" y="5" width="18" height="16" rx="2" />
+                                <path d="M16 3v4M8 3v4M3 11h18" />
+                              </svg>
+                            </div>
+
+                            <strong class="capitalize text-sm font-semibold text-slate-200">
+                              {{ period.monthName }}
+                            </strong>
                           </div>
 
-                          <span>Ver período →</span>
+                          <span
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition group-hover:text-blue-400"
+                          >
+                            Ver período
+
+                            <svg
+                              class="h-4 w-4"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              aria-hidden="true"
+                            >
+                              <path d="m9 18 6-6-6-6" />
+                            </svg>
+                          </span>
                         </button>
                       }
                     </div>
@@ -1337,12 +1597,28 @@
                 }
               </div>
             } @else {
-              <div class="empty-state">
-                <div class="empty-icon">📅</div>
+              <div
+                class="flex min-h-72 flex-col items-center justify-center px-4 py-10 text-center"
+              >
+                <div
+                  class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-400"
+                >
+                  <svg
+                    class="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M16 3v4M8 3v4M3 11h18" />
+                  </svg>
+                </div>
 
-                <h4>Nenhum período disponível</h4>
+                <h4 class="font-semibold text-slate-200">Nenhum período disponível</h4>
 
-                <p>
+                <p class="mt-1 max-w-md text-sm leading-6 text-slate-500">
                   Seu histórico financeiro aparecerá aqui quando você registrar sua primeira
                   transação.
                 </p>
@@ -1350,55 +1626,64 @@
             }
           </section>
         } @else {
-          <!-- ========================= -->
-          <!-- PERÍODO SELECIONADO -->
-          <!-- ========================= -->
+          <!-- Cabeçalho do período -->
+          <header class="mb-8">
+            <button
+              type="button"
+              (click)="closeHistoryPeriod()"
+              class="mb-5 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            >
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
 
-          <header class="topbar">
-            <div>
-              <button type="button" class="ghost-button" (click)="closeHistoryPeriod()">
-                ← Voltar para histórico
-              </button>
+              Voltar para histórico
+            </button>
 
-              <p class="eyebrow">Histórico mensal</p>
+            <p class="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Histórico mensal
+            </p>
 
-              <h2>
-                {{ selectedHistoryPeriod.monthName }}
-                {{ selectedHistoryPeriod.year }}
-              </h2>
-            </div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-100 sm:text-3xl">
+              {{ selectedHistoryPeriod.monthName }}
+              {{ selectedHistoryPeriod.year }}
+            </h2>
           </header>
 
-          <!-- ========================= -->
-          <!-- RESUMO DO PERÍODO -->
-          <!-- ========================= -->
-
-          <!-- ========================= -->
-          <!-- RESUMO DO PERÍODO -->
-          <!-- ========================= -->
-
-          <section class="history-financial-summary">
-            <!-- ========================= -->
-            <!-- PREVISTO -->
-            <!-- ========================= -->
-
-            <article class="history-summary-group">
-              <div class="history-summary-header">
+          <!-- Resumo financeiro -->
+          <section class="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <!-- Previsto -->
+            <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm sm:p-6">
+              <div
+                class="mb-5 flex flex-col gap-3 border-b border-slate-800 pb-5 sm:flex-row sm:items-start sm:justify-between"
+              >
                 <div>
-                  <p class="eyebrow">Planejamento</p>
-                  <h3>Previsto</h3>
+                  <p class="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-blue-400">
+                    Planejamento
+                  </p>
+
+                  <h3 class="text-lg font-semibold text-slate-100">Previsto</h3>
                 </div>
 
-                <span class="history-summary-label"> Todas as movimentações </span>
+                <span
+                  class="w-fit rounded-full bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-400"
+                >
+                  Todas as movimentações
+                </span>
               </div>
 
-              <div class="history-summary-values">
-                <!-- RECEITAS PREVISTAS -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Receitas </span>
 
-                <div class="history-summary-item">
-                  <span>Receitas</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-emerald-400">
                     {{
                       historyIncome.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1408,12 +1693,10 @@
                   </strong>
                 </div>
 
-                <!-- DESPESAS PREVISTAS -->
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Despesas </span>
 
-                <div class="history-summary-item">
-                  <span>Despesas</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-rose-400">
                     {{
                       historyExpenses.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1423,12 +1706,10 @@
                   </strong>
                 </div>
 
-                <!-- SALDO PREVISTO -->
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Saldo previsto </span>
 
-                <div class="history-summary-item">
-                  <span>Saldo previsto</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-slate-100">
                     {{
                       historyBalance.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1440,27 +1721,33 @@
               </div>
             </article>
 
-            <!-- ========================= -->
-            <!-- REALIZADO -->
-            <!-- ========================= -->
-
-            <article class="history-summary-group">
-              <div class="history-summary-header">
+            <!-- Realizado -->
+            <article class="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm sm:p-6">
+              <div
+                class="mb-5 flex flex-col gap-3 border-b border-slate-800 pb-5 sm:flex-row sm:items-start sm:justify-between"
+              >
                 <div>
-                  <p class="eyebrow">Movimentação efetiva</p>
-                  <h3>Realizado</h3>
+                  <p
+                    class="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-400"
+                  >
+                    Movimentação efetiva
+                  </p>
+
+                  <h3 class="text-lg font-semibold text-slate-100">Realizado</h3>
                 </div>
 
-                <span class="history-summary-label"> Somente concluídas </span>
+                <span
+                  class="w-fit rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400"
+                >
+                  Somente concluídas
+                </span>
               </div>
 
-              <div class="history-summary-values">
-                <!-- RECEITAS RECEBIDAS -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Recebido </span>
 
-                <div class="history-summary-item">
-                  <span>Recebido</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-emerald-400">
                     {{
                       historyCompletedIncome.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1470,12 +1757,10 @@
                   </strong>
                 </div>
 
-                <!-- DESPESAS PAGAS -->
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Pago </span>
 
-                <div class="history-summary-item">
-                  <span>Pago</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-rose-400">
                     {{
                       historyCompletedExpenses.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1485,12 +1770,10 @@
                   </strong>
                 </div>
 
-                <!-- SALDO REALIZADO -->
+                <div>
+                  <span class="text-xs font-medium text-slate-500"> Saldo realizado </span>
 
-                <div class="history-summary-item">
-                  <span>Saldo realizado</span>
-
-                  <strong>
+                  <strong class="mt-2 block text-lg font-bold text-slate-100">
                     {{
                       historyCompletedBalance.toLocaleString('pt-BR', {
                         style: 'currency',
@@ -1503,90 +1786,114 @@
             </article>
           </section>
 
-          <!-- ========================= -->
-          <!-- TRANSAÇÕES DO PERÍODO -->
-          <!-- ========================= -->
-
-          <section class="panel transactions-page">
-            <div class="panel-header">
+          <!-- Transações do período -->
+          <section
+            class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-sm"
+          >
+            <div
+              class="flex flex-col gap-3 border-b border-slate-800 p-5 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
-                <p class="eyebrow">Movimentações</p>
+                <p class="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Movimentações
+                </p>
 
-                <h3>Transações do período</h3>
+                <h3 class="text-lg font-semibold text-slate-100">Transações do período</h3>
               </div>
 
-              <strong>
+              <span
+                class="w-fit rounded-full bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-400"
+              >
                 {{ historyTransactions.length }}
-
                 {{ historyTransactions.length === 1 ? 'transação' : 'transações' }}
-              </strong>
+              </span>
             </div>
 
-            <div class="transaction-list">
+            <div class="px-4 sm:px-5">
               @for (transaction of historyTransactions; track transaction.id) {
-                <div class="transaction-item">
-                  <div class="transaction-info">
-                    <!-- ÍCONE -->
-
-                    <div class="transaction-icon">
+                <div
+                  class="flex flex-col gap-4 border-b border-slate-800 py-5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      [class.bg-emerald-500/10]="transaction.type === 'INCOME'"
+                      [class.text-emerald-400]="transaction.type === 'INCOME'"
+                      [class.bg-rose-500/10]="transaction.type === 'EXPENSE'"
+                      [class.text-rose-400]="transaction.type === 'EXPENSE'"
+                    >
                       @if (transaction.type === 'INCOME') {
-                        📈
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 19V5" />
+                          <path d="m5 12 7-7 7 7" />
+                        </svg>
                       } @else {
-                        💳
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 5v14" />
+                          <path d="m19 12-7 7-7-7" />
+                        </svg>
                       }
                     </div>
 
-                    <!-- INFORMAÇÕES -->
-
-                    <div>
-                      <strong>
+                    <div class="min-w-0">
+                      <strong class="block truncate text-sm font-semibold text-slate-200">
                         {{ transaction.description }}
                       </strong>
 
-                      <div class="transaction-metadata">
-                        <!-- CATEGORIA -->
-
-                        <span class="category-badge">
+                      <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <span
+                          class="rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-400"
+                        >
                           {{ transaction.category }}
                         </span>
 
-                        <!-- DATA -->
-
-                        <span class="transaction-date">
+                        <span class="text-xs text-slate-500">
                           {{ transaction.date }}
                         </span>
 
-                        <!-- STATUS -->
-
-                        <span
-                          class="status-badge"
-                          [class.completed]="transaction.status === 'COMPLETED'"
-                          [class.pending]="transaction.status === 'PENDING'"
-                        >
-                          @if (transaction.type === 'EXPENSE') {
-                            @if (transaction.status === 'COMPLETED') {
+                        @if (transaction.status === 'COMPLETED') {
+                          <span
+                            class="rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400"
+                          >
+                            @if (transaction.type === 'EXPENSE') {
                               Pago
                             } @else {
-                              Pendente
-                            }
-                          } @else {
-                            @if (transaction.status === 'COMPLETED') {
                               Recebido
+                            }
+                          </span>
+                        } @else {
+                          <span
+                            class="rounded-full bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-400"
+                          >
+                            @if (transaction.type === 'EXPENSE') {
+                              Pendente
                             } @else {
                               A receber
                             }
-                          }
-                        </span>
+                          </span>
+                        }
                       </div>
                     </div>
                   </div>
 
-                  <!-- VALOR -->
-
                   <strong
-                    class="transaction-amount"
-                    [class.income]="transaction.type === 'INCOME'"
-                    [class.expense]="transaction.type === 'EXPENSE'"
+                    class="whitespace-nowrap text-sm font-semibold"
+                    [class.text-emerald-400]="transaction.type === 'INCOME'"
+                    [class.text-rose-400]="transaction.type === 'EXPENSE'"
                   >
                     @if (transaction.type === 'INCOME') {
                       +
@@ -1603,16 +1910,32 @@
                   </strong>
                 </div>
               } @empty {
-                <!-- ========================= -->
-                <!-- PERÍODO SEM TRANSAÇÕES -->
-                <!-- ========================= -->
+                <div
+                  class="flex min-h-64 flex-col items-center justify-center px-4 py-10 text-center"
+                >
+                  <div
+                    class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-slate-400"
+                  >
+                    <svg
+                      class="h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M8 13h8" />
+                      <path d="M8 17h5" />
+                    </svg>
+                  </div>
 
-                <div class="empty-state">
-                  <div class="empty-icon">📄</div>
+                  <h4 class="font-semibold text-slate-200">Nenhuma transação neste período</h4>
 
-                  <h4>Nenhuma transação neste período</h4>
-
-                  <p>Não existem movimentações registradas neste mês.</p>
+                  <p class="mt-1 max-w-sm text-sm leading-6 text-slate-500">
+                    Não existem movimentações registradas neste mês.
+                  </p>
                 </div>
               }
             </div>
